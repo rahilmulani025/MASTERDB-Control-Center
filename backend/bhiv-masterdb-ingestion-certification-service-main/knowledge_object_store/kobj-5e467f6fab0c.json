@@ -1,0 +1,15 @@
+{
+    "knowledge_object_id": "kobj-5e467f6fab0c",
+    "knowledge_hash": "e7a8e99de82af87ae350f0acc240089a76702ab33ce0be5a7f6bc121d13b058e",
+    "package_id": "pkg-beb07acd2d83",
+    "schema_version": "2",
+    "parent_package": null,
+    "child_packages": [],
+    "source_reference": "s3://masterdb-data/customer_records.csv",
+    "lineage_reference": null,
+    "derivation_path": [
+        "ingestion",
+        "cleanse"
+    ],
+    "created_at": "2026-09-08T09:44:26.971266+00:00"
+}

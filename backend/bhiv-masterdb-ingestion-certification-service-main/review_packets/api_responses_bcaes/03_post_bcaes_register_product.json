@@ -1,0 +1,27 @@
+{
+  "status_code": 200,
+  "body": {
+    "id": "prd-85bc2a9c60fb",
+    "registry_type": "product",
+    "classification": "product",
+    "name": "MASTERDB Ingestion Certification Service",
+    "purpose": "Certifies datasets for MASTERDB ingestion.",
+    "owner": "Kavy",
+    "status": "draft",
+    "version": "1.0",
+    "dependencies": [
+      {
+        "id": "cap-035429711807",
+        "required_version": null
+      }
+    ],
+    "consumers": [],
+    "authority_boundaries": [
+      "Kavy",
+      "Nupur"
+    ],
+    "links": [],
+    "created_at": "2026-07-29T07:21:11.881675+00:00",
+    "updated_at": "2026-07-29T07:21:11.881684+00:00"
+  }
+}
