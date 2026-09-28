@@ -78,7 +78,10 @@ export function AppShell() {
   } else if (pathSegments[0] === 'governance') {
     breadcrumbs.push({ label: 'Governance Guide' });
   } else if (pathSegments[0] === 'ingestion') {
-    breadcrumbs.push({ label: 'Dataset Ingestion Pipeline' });
+    breadcrumbs.push({ label: 'Controlled Ingestion', path: pathSegments.length > 1 ? '/ingestion' : undefined });
+    if (pathSegments.length > 1 && pathSegments[1] === 'jobs') {
+      breadcrumbs.push({ label: 'Ingestion Jobs' });
+    }
   } else {
     breadcrumbs.push({ label: pathSegments[0].replace('-', ' ') });
   }

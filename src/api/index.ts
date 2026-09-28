@@ -1,1 +1,2 @@
-export { apiClient } from './client'
+export { apiClient } from './client';
+export * from './upload';

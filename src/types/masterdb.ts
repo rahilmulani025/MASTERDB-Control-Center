@@ -495,3 +495,198 @@ export interface AdminBackupSnapshot {
 export interface AdminRestoreResponse {
   restored: Record<string, number>;
 }
+
+// ─────────────────────────────────────────────────────────────
+// CONTROLLED INGESTION CONTRACT TYPES
+// ─────────────────────────────────────────────────────────────
+
+export type TargetDatabase =
+  | 'VectorDB'
+  | 'GraphDB'
+  | 'MetadataDB'
+  | 'DocumentDB'
+  | 'TimeSeriesDB'
+  | 'RelationalDB'
+  | 'ArchiveDB'
+  | 'AnalyticsDB';
+
+export type SourceFormat = 'csv' | 'json' | 'xlsx' | 'pdf' | 'txt' | 'image';
+
+export interface IngestionJobStep {
+  step: string;
+  passed: boolean;
+  detail?: string;
+  at?: string;
+  [key: string]: unknown;
+}
+
+export interface TargetDatabaseInfo {
+  name?: TargetDatabase | string;
+  key?: string;
+  display_name?: string;
+  description?: string;
+  accepted_formats?: Array<SourceFormat | string>;
+  required_role?: string;
+  status?: string;
+  availability?: string;
+  permissions?: string[] | Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export type DatabasesResponse = TargetDatabaseInfo[] | { databases: TargetDatabaseInfo[] };
+
+export interface IngestionRequest {
+  dataset_id: string;
+  target_database: TargetDatabase | string;
+  source_format: SourceFormat | string;
+  package_id?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export type IngestionJobState = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'PERSISTED' | 'FAILED' | 'REJECTED' | string;
+
+export interface IngestionJob {
+  job_id: string;
+  trace_id?: string;
+  dataset_id?: string;
+  target_database?: TargetDatabase | string;
+  source_format?: SourceFormat | string;
+  package_id?: string | null;
+  state?: IngestionJobState;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+  submitted_at?: string;
+  completed_at?: string;
+  actor?: string;
+  roles?: string[];
+  certification_state?: string;
+  integrity_score?: number;
+  steps?: IngestionJobStep[];
+  certification_decision?: unknown;
+  routing_decision?: unknown;
+  authorization_decision?: unknown;
+  format_decision?: unknown;
+  overall_outcome?: string;
+  rejection_reason?: string | null;
+  failure_reason?: string | null;
+  detail?: unknown;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export type IngestionJobsResponse = IngestionJob[] | { jobs: IngestionJob[]; count?: number };
+
+// ─────────────────────────────────────────────────────────────
+// GOVERNED UPLOAD CONTRACT TYPES (MASTERDB-BE-02)
+// ─────────────────────────────────────────────────────────────
+
+export type UploadStatus =
+  | 'UPLOADED'
+  | 'RECEIVED'
+  | 'VALIDATING'
+  | 'VALIDATED'
+  | 'REJECTED'
+  | 'REGISTERED'
+  | 'INGESTED'
+  | 'AVAILABLE';
+
+export interface UploadJobStep {
+  step: string;
+  passed: boolean;
+  detail?: string;
+  at?: string;
+  [key: string]: unknown;
+}
+
+export interface UploadInitiationRequest {
+  filename: string;
+  content_type: string;
+  file_size: number;
+  checksum_sha256?: string;
+  classification?: string;
+  source_reference?: string;
+  provenance_metadata?: Record<string, unknown>;
+  schema_version?: string;
+  product_source?: string;
+  intended_use?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UploadInitiationResponse {
+  upload_id: string;
+  trace_id: string;
+  status: UploadStatus | string;
+  storage_path: string;
+  max_size_bytes: number;
+  allowed_content_types: string[];
+  checksum_algorithm: string;
+}
+
+export interface UploadContentResponse {
+  upload_id: string;
+  status: UploadStatus | string;
+  file_size_bytes: number;
+}
+
+export interface UploadValidationResponse {
+  upload_id: string;
+  status: UploadStatus | string;
+  validation_passed: boolean;
+  rejection_reason?: string | null;
+  steps: UploadJobStep[];
+}
+
+export interface UploadJobTimestamps {
+  uploaded_at?: string;
+  received_at?: string | null;
+  validated_at?: string | null;
+  registered_at?: string | null;
+  [key: string]: string | null | undefined;
+}
+
+export interface UploadJob {
+  upload_id: string;
+  status: UploadStatus | string;
+  filename: string;
+  content_type: string;
+  file_size_bytes: number;
+  actor: string;
+  steps: UploadJobStep[];
+  rejection_reason?: string | null;
+  dataset_id?: string | null;
+  package_id?: string | null;
+  ingestion_job_id?: string | null;
+  timestamps: UploadJobTimestamps;
+  trace_id?: string;
+  product_source?: string;
+  [key: string]: unknown;
+}
+
+export type UploadStatusResponse = UploadJob;
+
+export interface UploadListItem {
+  upload_id: string;
+  status: UploadStatus | string;
+  filename: string;
+  file_size_bytes: number;
+  actor: string;
+  product_source?: string | null;
+  uploaded_at: string;
+}
+
+export interface UploadListResponse {
+  count: number;
+  uploads: UploadListItem[];
+}
+
+export interface UploadCancelRequest {
+  reason: string;
+}
+
+export interface UploadCancelResponse {
+  upload_id: string;
+  status: UploadStatus | string;
+  rejection_reason?: string | null;
+}
+

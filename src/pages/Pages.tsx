@@ -2613,77 +2613,8 @@ export function DatasetDetails(){
     </>
   );
 }
-
-export function Ingestion() {
-  return (
-    <>
-      <PageHeader
-        eyebrow="INGESTION SUBSYSTEM"
-        title="Dataset Ingestion"
-        description="Dataset ingestion is performed by the sovereign ingestion pipeline. This control center monitors and governs registered packages after ingestion."
-      />
-
-      <div className="section-container" style={{ maxWidth: '840px' }}>
-        <SectionHeader
-          eyebrow="SOVEREIGN ARCHITECTURE"
-          title="Ingestion Pipeline Protocol"
-          detail="Decoupled batch and streaming ingestion decoupled from the control plane."
-        />
-
-        <div className="notice info" style={{ marginBottom: '20px' }}>
-          <b>Sovereign Pipeline Architecture:</b> Raw dataset ingestion, format conversion, and payload transport are executed by upstream workers. Ingestion produces immutable packages that register directly into the MASTERDB canonical store.
-        </div>
-
-        <ol className="steps" style={{ marginBottom: '24px' }}>
-          {['Source Ingestion', 'Metadata Packaging', 'Payload Staging', 'Validation Gates', 'Certification Hook', 'Retrieval Registered'].map((step, idx) => (
-            <li key={step}>
-              <b>{idx + 1}</b>
-              {step}
-            </li>
-          ))}
-        </ol>
-
-        <div style={{ marginTop: '24px' }}>
-          <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Governed Control Plane Actions
-          </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-            <Link to="/datasets" className="btn-primary" style={{ textDecoration: 'none', justifyContent: 'center' }}>
-              Dataset Explorer ›
-            </Link>
-            <Link to="/governance" className="btn-secondary" style={{ textDecoration: 'none', justifyContent: 'center' }}>
-              Governance Guide ›
-            </Link>
-            <Link to="/observability" className="btn-secondary" style={{ textDecoration: 'none', justifyContent: 'center' }}>
-              Observability Console ›
-            </Link>
-            <Link to="/admin" className="btn-secondary" style={{ textDecoration: 'none', justifyContent: 'center' }}>
-              System & Admin ›
-            </Link>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-export function Jobs() {
-  return (
-    <>
-      <PageHeader
-        eyebrow="BACKGROUND JOBS"
-        title="Ingestion Jobs"
-        description="Monitor sovereign ingestion workers and background job queues when job APIs are configured."
-      />
-      <div className="section-container">
-        <DataTable
-          columns={['Job ID', 'Dataset', 'Target', 'Status', 'Started', 'Updated', 'Result']}
-          empty="No background ingestion jobs currently executing."
-        />
-      </div>
-    </>
-  );
-}
+export { ControlledIngestion as Ingestion } from './ControlledIngestion';
+export { IngestionJobs as Jobs } from './IngestionJobs';
 
 export function Observability() {
   // 1. Runtime Identity state

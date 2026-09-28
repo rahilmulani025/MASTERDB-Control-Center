@@ -14,6 +14,9 @@ function joinPath(base: string, path: string): string {
 
 /** Normalizes fetch errors into APIError */
 function normalizeError(err: unknown, path: string): APIError {
+  if (err && typeof err === 'object' && 'message' in err && 'status' in err) {
+    return err as APIError;
+  }
   if (err instanceof Error) {
     return { message: err.message, status: undefined, path } satisfies APIError;
   }
@@ -45,11 +48,30 @@ export class ApiClient {
 
       if (!response.ok) {
         const text = await response.text();
+        let parsedDetail: unknown = text;
+        let errorMessage = `MASTERDB request failed (${response.status}).`;
+        try {
+          const json = JSON.parse(text);
+          parsedDetail = json;
+          if (json && typeof json === 'object') {
+            if (typeof (json as { detail?: unknown }).detail === 'string') {
+              errorMessage = (json as { detail: string }).detail;
+            } else if (typeof (json as { message?: unknown }).message === 'string') {
+              errorMessage = (json as { message: string }).message;
+            }
+          }
+        } catch {
+          // fallback to raw text if not JSON
+          if (text && text.length < 200) {
+            errorMessage = text;
+          }
+        }
+
         throw {
-          message: 'MASTERDB request failed.',
+          message: errorMessage,
           status: response.status,
           path,
-          detail: text,
+          detail: parsedDetail,
         } satisfies APIError;
       }
 
@@ -72,3 +94,4 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
