@@ -446,6 +446,7 @@ export interface ReplayRegistryManifestResponse {
 
 export interface AuthTokenResponse {
   access_token: string;
+  token_type: string;
   actor: string;
   roles: string[];
   expires_at: string;
@@ -510,7 +511,7 @@ export type TargetDatabase =
   | 'ArchiveDB'
   | 'AnalyticsDB';
 
-export type SourceFormat = 'csv' | 'json' | 'xlsx' | 'pdf' | 'txt' | 'image';
+export type SourceFormat = 'csv' | 'json' | 'xlsx' | 'pdf' | 'txt' | 'image' | string;
 
 export interface IngestionJobStep {
   step: string;
@@ -521,13 +522,13 @@ export interface IngestionJobStep {
 }
 
 export interface TargetDatabaseInfo {
-  name?: TargetDatabase | string;
-  key?: string;
-  display_name?: string;
-  description?: string;
-  accepted_formats?: Array<SourceFormat | string>;
-  required_role?: string;
-  status?: string;
+  key: string;
+  display_name: string;
+  description: string;
+  accepted_formats: string[];
+  required_role: string;
+  status: string;
+  name?: string;
   availability?: string;
   permissions?: string[] | Record<string, unknown>;
   [key: string]: unknown;
@@ -539,11 +540,26 @@ export interface IngestionRequest {
   dataset_id: string;
   target_database: TargetDatabase | string;
   source_format: SourceFormat | string;
-  package_id?: string;
+  package_id?: string | null;
+  upload_id?: string | null;
   metadata?: Record<string, unknown>;
 }
 
-export type IngestionJobState = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'PERSISTED' | 'FAILED' | 'REJECTED' | string;
+export type IngestionJobState =
+  | 'PERSISTED'
+  | 'REJECTED'
+  | 'PARTIAL_PERSISTENCE'
+  | 'PENDING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | string;
+
+export interface IngestionJobMetadata {
+  target_reference?: string;
+  records_persisted?: number;
+  [key: string]: unknown;
+}
 
 export interface IngestionJob {
   job_id: string;
@@ -552,33 +568,29 @@ export interface IngestionJob {
   target_database?: TargetDatabase | string;
   source_format?: SourceFormat | string;
   package_id?: string | null;
-  state?: IngestionJobState;
-  status?: string;
-  created_at?: string;
-  updated_at?: string;
-  submitted_at?: string;
-  completed_at?: string;
+  upload_id?: string | null;
   actor?: string;
   roles?: string[];
+  status?: IngestionJobState;
+  state?: IngestionJobState;
   certification_state?: string;
   integrity_score?: number;
   steps?: IngestionJobStep[];
-  certification_decision?: unknown;
-  routing_decision?: unknown;
-  authorization_decision?: unknown;
-  format_decision?: unknown;
-  overall_outcome?: string;
   rejection_reason?: string | null;
   failure_reason?: string | null;
+  metadata?: IngestionJobMetadata;
+  submitted_at?: string;
+  completed_at?: string;
+  created_at?: string;
+  updated_at?: string;
   detail?: unknown;
-  metadata?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
 export type IngestionJobsResponse = IngestionJob[] | { jobs: IngestionJob[]; count?: number };
 
 // ─────────────────────────────────────────────────────────────
-// GOVERNED UPLOAD CONTRACT TYPES (MASTERDB-BE-02)
+// GOVERNED UPLOAD CONTRACT TYPES
 // ─────────────────────────────────────────────────────────────
 
 export type UploadStatus =
@@ -586,10 +598,10 @@ export type UploadStatus =
   | 'RECEIVED'
   | 'VALIDATING'
   | 'VALIDATED'
-  | 'REJECTED'
   | 'REGISTERED'
   | 'INGESTED'
-  | 'AVAILABLE';
+  | 'AVAILABLE'
+  | 'REJECTED';
 
 export interface UploadJobStep {
   step: string;
@@ -603,13 +615,13 @@ export interface UploadInitiationRequest {
   filename: string;
   content_type: string;
   file_size: number;
-  checksum_sha256?: string;
-  classification?: string;
-  source_reference?: string;
+  checksum_sha256?: string | null;
+  classification?: string | null;
+  source_reference?: string | null;
   provenance_metadata?: Record<string, unknown>;
-  schema_version?: string;
-  product_source?: string;
-  intended_use?: string;
+  schema_version?: string | null;
+  product_source?: string | null;
+  intended_use?: string | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -686,7 +698,7 @@ export interface UploadCancelRequest {
 
 export interface UploadCancelResponse {
   upload_id: string;
-  status: UploadStatus | string;
+  status: 'REJECTED' | UploadStatus | string;
   rejection_reason?: string | null;
 }
 

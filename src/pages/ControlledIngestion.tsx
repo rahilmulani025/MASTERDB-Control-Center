@@ -184,11 +184,11 @@ function isTerminalState(state?: string): boolean {
   if (!state) return false;
   const upper = state.toUpperCase();
   return (
-    upper === 'COMPLETED' ||
     upper === 'PERSISTED' ||
-    upper === 'FAILED' ||
     upper === 'REJECTED' ||
-    upper === 'CANCELLED'
+    upper === 'PARTIAL_PERSISTENCE' ||
+    upper === 'COMPLETED' ||
+    upper === 'FAILED'
   );
 }
 
@@ -211,7 +211,7 @@ export function ControlledIngestion() {
   const [selectedDatasetId, setSelectedDatasetId] = React.useState<string>('');
   const [selectedPackageId, setSelectedPackageId] = React.useState<string>('');
   const [selectedTargetDb, setSelectedTargetDb] = React.useState<string>('');
-  const [customFormat] = React.useState<string>('');
+  const [selectedFormat, setSelectedFormat] = React.useState<string>('csv');
 
   // ─── 4. Pre-submission Certification Context ──────────────────────────────
   const [certStatus, setCertStatus] = React.useState<ValidationStatusResponse | null>(null);
@@ -536,8 +536,8 @@ export function ControlledIngestion() {
         const updated = await getUploadJob(uploadId);
         setUploadJobDetail(updated);
         setUploadError({
-          title: 'Upload Cancelled',
-          detail: `Upload job ${uploadId} was cancelled by operator. Reason: ${res.rejection_reason || cancelReason}`,
+          title: 'Upload Session Rejected (Cancelled)',
+          detail: `Upload session ${uploadId} was cancelled by operator and moved to REJECTED. Reason: ${res.rejection_reason || cancelReason}`,
         });
       }
     } catch (err) {
@@ -605,17 +605,22 @@ export function ControlledIngestion() {
     setSubmitError(null);
     setActiveJob(null);
 
-    const formatToUse = customFormat || 'csv';
+    const selectedDb = databases.find((d) => getDbKey(d) === selectedTargetDb);
+    const acceptedFormats = selectedDb?.accepted_formats || ['csv', 'json'];
+    const fileExt = selectedFile ? selectedFile.name.split('.').pop()?.toLowerCase() : '';
+    const formatToUse = selectedFormat || (fileExt && acceptedFormats.includes(fileExt) ? fileExt : acceptedFormats[0]) || 'csv';
+
+    const linkedUploadId = uploadInitResponse?.upload_id || uploadJobDetail?.upload_id || null;
 
     const payload: IngestionRequest = {
       dataset_id: selectedDatasetId.trim(),
       target_database: selectedTargetDb,
       source_format: formatToUse,
-      package_id: selectedPackageId.trim() || undefined,
+      package_id: selectedPackageId.trim() || null,
+      upload_id: linkedUploadId,
       metadata: {
         submitted_by: 'MASTERDB Control Center',
         submitted_at: new Date().toISOString(),
-        upload_id: uploadInitResponse?.upload_id || undefined,
         trace_id: uploadInitResponse?.trace_id || undefined,
       },
     };
@@ -1283,9 +1288,34 @@ export function ControlledIngestion() {
                       <div style={{ fontSize: '11px', color: '#475569' }}>
                         Formats: {db.accepted_formats?.join(', ') || 'All'}
                       </div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px' }}>
+                        Role: <code>{db.required_role || 'open'}</code>
+                      </div>
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Dynamic Format Selector derived from selected target database */}
+            {selectedTargetDb && (
+              <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  Source Format (Dynamically Derived from Target Capability):
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(databases.find((d) => getDbKey(d) === selectedTargetDb)?.accepted_formats || ['csv', 'json']).map((fmt) => (
+                    <button
+                      key={fmt}
+                      type="button"
+                      className={selectedFormat === fmt ? 'btn-primary' : 'btn-secondary'}
+                      style={{ fontSize: '12px', padding: '4px 12px', textTransform: 'uppercase' }}
+                      onClick={() => setSelectedFormat(fmt)}
+                    >
+                      {fmt}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -1324,6 +1354,18 @@ export function ControlledIngestion() {
                 <span style={{ color: '#64748b' }}>Target Database:</span>
                 <span style={{ fontWeight: 600, color: '#0f172a' }}>
                   {selectedTargetDb || '— (Please select)'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748b' }}>Source Format:</span>
+                <span className="code-val" style={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                  {selectedFormat}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748b' }}>Linked Upload ID:</span>
+                <span className="code-val">
+                  {uploadInitResponse?.upload_id || uploadJobDetail?.upload_id || 'None (Direct catalog)'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
@@ -1407,14 +1449,92 @@ export function ControlledIngestion() {
                   <span style={{ color: '#64748b' }}>Job ID:</span>
                   <span className="code-val" style={{ fontWeight: 600 }}>{activeJob.job_id}</span>
                 </div>
+                {activeJob.trace_id && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Trace ID:</span>
+                    <span className="code-val">{activeJob.trace_id}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#64748b' }}>State:</span>
-                  <StatusBadge kind={activeJob.state === 'COMPLETED' || activeJob.state === 'PERSISTED' ? 'success' : 'info'}>
-                    {activeJob.state || activeJob.status || 'PENDING'}
+                  <StatusBadge
+                    kind={
+                      activeJob.status === 'PERSISTED' || activeJob.state === 'PERSISTED' || activeJob.state === 'COMPLETED'
+                        ? 'success'
+                        : activeJob.status === 'PARTIAL_PERSISTENCE' || activeJob.state === 'PARTIAL_PERSISTENCE'
+                          ? 'warning'
+                          : activeJob.status === 'REJECTED' || activeJob.state === 'REJECTED' || activeJob.state === 'FAILED'
+                            ? 'danger'
+                            : 'info'
+                    }
+                  >
+                    {activeJob.status || activeJob.state || 'PENDING'}
                   </StatusBadge>
                 </div>
+
+                {/* Specific callouts for PERSISTED / PARTIAL_PERSISTENCE / REJECTED */}
+                {(activeJob.status === 'PERSISTED' || activeJob.state === 'PERSISTED') && (
+                  <div className="notice success" style={{ marginTop: '6px' }}>
+                    <b>Persistence Verified:</b> Data is permanently persisted into {String(activeJob.target_database)}.
+                    {activeJob.metadata?.target_reference && (
+                      <div style={{ marginTop: '4px' }}>
+                        Target Ref: <code className="code-val">{activeJob.metadata.target_reference}</code>
+                      </div>
+                    )}
+                    {activeJob.metadata?.records_persisted !== undefined && (
+                      <div>
+                        Records Persisted: <b>{activeJob.metadata.records_persisted}</b>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(activeJob.status === 'PARTIAL_PERSISTENCE' || activeJob.state === 'PARTIAL_PERSISTENCE') && (
+                  <div className="notice warning" style={{ marginTop: '6px' }}>
+                    <b>Partial Persistence Warning:</b> Data was persisted, but the upload lifecycle could not be completed.
+                  </div>
+                )}
+
+                {(activeJob.status === 'REJECTED' || activeJob.state === 'REJECTED') && (
+                  <div className="notice error" style={{ marginTop: '6px' }}>
+                    <b>Ingestion Rejected:</b> {activeJob.rejection_reason || 'Rejection reason not provided.'}
+                  </div>
+                )}
+
+                {/* Step verification checklist */}
+                {activeJob.steps && activeJob.steps.length > 0 && (
+                  <div style={{ marginTop: '10px' }}>
+                    <h5 style={{ margin: '0 0 6px 0', fontSize: '12px', fontWeight: 600 }}>
+                      Pipeline Execution Steps
+                    </h5>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                      {activeJob.steps.map((step, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            padding: '6px 10px',
+                            background: step.passed ? '#f0fdf4' : '#fef2f2',
+                            border: `1px solid ${step.passed ? '#bbf7d0' : '#fecaca'}`,
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, color: step.passed ? '#15803d' : '#b91c1c' }}>
+                            {step.passed ? '✓' : '✕'} {step.step}
+                          </span>
+                          <span style={{ color: '#64748b' }}>
+                            {step.detail || (step.passed ? 'PASSED' : 'FAILED')}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isPolling && (
-                  <div style={{ fontSize: '11px', color: '#8b5cf6' }}>
+                  <div style={{ fontSize: '11px', color: '#8b5cf6', marginTop: '4px' }}>
                     Polling /ingest/jobs/{activeJob.job_id}…
                   </div>
                 )}

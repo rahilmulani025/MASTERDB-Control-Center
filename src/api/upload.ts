@@ -78,12 +78,12 @@ export async function initiateUpload(
 /**
  * POST /upload/{upload_id}/content
  * Sends raw binary bytes of the file.
- * Sets the actual Content-Type and does not convert to JSON or base64.
+ * Headers: Content-Type: application/octet-stream
  */
 export async function uploadFileContent(
   uploadId: string,
   file: File | Blob | ArrayBuffer,
-  contentType: string,
+  _contentType?: string,
   timeoutMs: number = 120_000
 ): Promise<UploadContentResponse> {
   const token = await getAuthToken();
@@ -93,7 +93,7 @@ export async function uploadFileContent(
     {
       method: 'POST',
       headers: {
-        'Content-Type': contentType || 'application/octet-stream',
+        'Content-Type': 'application/octet-stream',
         Authorization: `Bearer ${token}`,
       },
       body: file as BodyInit,

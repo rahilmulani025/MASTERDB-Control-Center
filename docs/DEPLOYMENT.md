@@ -1,204 +1,124 @@
-# MASTERDB Control Center — Deployment Guide
+# MASTERDB Control Center — Production Deployment Guide
+
+> Operational deployment and hosting guide for the MASTERDB Control Center Single Page Application.
 
 ---
 
-## Overview
+## 1. Deployment Overview
 
-The MASTERDB Control Center is a static single-page application (SPA) built with Vite. It requires no server-side rendering. Deployment consists of:
+The MASTERDB Control Center is a static Single Page Application (SPA) built with React and Vite. It compiles down to pure HTML, CSS, and JavaScript files in the `dist/` folder, which can be served by any high-performance static web server or CDN.
 
-1. Building the static frontend bundle
-2. Serving `dist/` from a web server or CDN
-3. Configuring a reverse proxy to forward API paths to the MASTERDB backend
+```
+Client Browser
+     │
+     ▼
+Static Web Server / CDN (Nginx / Caddy / Cloudflare / Vercel)
+     │
+     ├── /assets/*, index.html  ──> Serve static bundle from dist/
+     │
+     └── /health, /ingest, ...  ──> Reverse-proxy to MASTERDB FastAPI Backend
+```
 
 ---
 
-## Environment Variable
+## 2. Environment Variables
 
-The only deployment-relevant environment variable is:
+| Variable | Scope | Purpose | Example Value |
+|---|---|---|---|
+| `VITE_MASTERDB_API_URL` | Build-time | Base URL for MASTERDB API calls. If empty, relative paths are used. | `https://api.masterdb.domain` or `""` |
 
-```
-VITE_MASTERDB_API_URL=
-```
-
-This variable is read **at build time** by Vite and compiled into the JavaScript bundle. It cannot be changed after the build without rebuilding.
-
-### When to leave it blank
-
-Leave `VITE_MASTERDB_API_URL` **empty** when:
-
-- The frontend and backend are served from the **same origin** via a reverse proxy
-- All API paths (e.g. `/health`, `/packages/*`) are forwarded to the backend by the web server
-
-In this case, the `ApiClient` sends requests to relative paths like `/discovery/packages`, which the web server routes to the backend.
-
-### When to set an explicit URL
-
-Set `VITE_MASTERDB_API_URL=https://api.example.com` when:
-
-- The frontend is served from a **different host** than the backend
-- There is no reverse proxy co-locating the frontend and backend
-
-In this case, the `ApiClient` sends requests to `https://api.example.com/discovery/packages` etc. The backend must allow cross-origin requests from the frontend origin.
+> ⚠️ **Security Warning:** Any variable prefixed with `VITE_` is compiled into the client-side JavaScript bundle and is publicly visible to anyone inspecting network traffic. **Never** put database credentials, private keys, or JWT secrets in `.env` files.
 
 ---
 
-## Development Topology
+## 3. Build & Verification Pipeline
 
-```
-Browser
-  │
-  ▼  http://127.0.0.1:5173
-Vite Dev Server
-  │
-  ├── / (static)     → serves React app
-  │
-  └── /health        ─┐
-      /ready           │  Vite proxy (vite.config.ts)
-      /discovery       │  forwards to:
-      /packages        │
-      /validate        ├─→ http://127.0.0.1:8000
-      /status          │   (MASTERDB FastAPI backend)
-      /report          │
-      /certify         │
-      /mdu             │
-      /tantra          │
-      /runtime         │
-      /shared          │
-      /parikshak       │
-      /niyantran       │
-      /replay-registry │
-      /admin           │
-      /auth           ─┘
-```
-
-**Running locally:**
+Run the complete build pipeline to ensure zero type errors, clean linting, and optimized bundle emission:
 
 ```bash
-# Start MASTERDB backend first (follow backend setup instructions)
+# 1. Verify strict TypeScript compliance (must return 0 errors)
+npm run type-check
 
-# Start frontend
-npm run dev
-# → http://127.0.0.1:5173
+# 2. Verify ESLint code standards (must return 0 errors, 0 warnings)
+npm run lint
+
+# 3. Compile optimized production assets
+npm run build
 ```
 
-The Vite proxy handles API routing. `VITE_MASTERDB_API_URL` can be left blank in `.env` for local development.
+The resulting `dist/` directory contains:
+- `index.html` — Application entry point
+- `assets/index-[hash].css` — Production CSS stylesheet
+- `assets/index-[hash].js` — Minified, treeshaken JavaScript application bundle
 
 ---
 
-## Production Topology
+## 4. Production Hosting Topologies
 
-```
-Browser
-  │
-  ▼  https://control-center.yourhost.com
-Web Server / Reverse Proxy  (nginx / Caddy / Traefik / etc.)
-  │
-  ├── Location /          → serve dist/ (static files)
-  │
-  └── Location /health, /ready, /discovery,
-               /packages, /validate, /status,
-               /report, /certify, /mdu, /tantra,
-               /runtime, /shared, /parikshak,
-               /niyantran, /replay-registry,
-               /admin, /auth
-                          → proxy_pass to MASTERDB FastAPI backend
-```
+### Topology A: Reverse-Proxy (Recommended)
+In this setup, a reverse proxy (e.g. Nginx, Caddy) serves the static frontend and proxies API paths to the FastAPI backend under the same hostname.
 
-**Build steps:**
-
-```bash
-npm run type-check   # must pass with 0 errors
-npm run lint         # must pass with 0 errors
-npm run build        # produces dist/
-```
-
-Serve the contents of `dist/` as static files. Configure the SPA fallback so that all unmatched paths return `index.html` (required for client-side routing).
-
----
-
-## Nginx Configuration Sketch
-
-> The deployment team must write the final configuration. The following is a reference sketch only — adapt to your environment.
-
+#### Nginx Configuration Example (`nginx.conf`):
 ```nginx
 server {
-    listen 443 ssl;
-    server_name control-center.yourhost.com;
-
+    listen 80;
+    server_name masterdb.domain.com;
     root /var/www/masterdb-control-center/dist;
     index index.html;
 
-    # SPA fallback — required for React Router
+    # SPA Client Routing
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Forward all API paths to MASTERDB backend
-    location ~ ^/(health|ready|discovery|packages|validate|status|report|certify|mdu|tantra|runtime|shared|parikshak|niyantran|replay-registry|admin|auth) {
-        proxy_pass http://masterdb-backend:8000;
+    # Proxy API requests to backend service
+    location ~ ^/(health|ready|metrics|discovery|packages|validate|status|report|certify|mdu|tantra|runtime|shared|parikshak|niyantran|replay-registry|admin|auth|databases|upload|ingest) {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 500M;
     }
 }
 ```
 
----
+### Topology B: Standalone Static CDN + Cross-Origin API
+If the frontend is hosted on a static CDN (e.g. Vercel, Cloudflare Pages, S3/CloudFront) and the backend is on a separate domain (e.g. `api.masterdb.domain.com`):
 
-## Caddy Configuration Sketch
-
-```caddy
-control-center.yourhost.com {
-    handle /health* { reverse_proxy masterdb-backend:8000 }
-    handle /ready* { reverse_proxy masterdb-backend:8000 }
-    handle /discovery* { reverse_proxy masterdb-backend:8000 }
-    handle /packages* { reverse_proxy masterdb-backend:8000 }
-    handle /validate* { reverse_proxy masterdb-backend:8000 }
-    handle /status* { reverse_proxy masterdb-backend:8000 }
-    handle /report* { reverse_proxy masterdb-backend:8000 }
-    handle /certify* { reverse_proxy masterdb-backend:8000 }
-    handle /mdu* { reverse_proxy masterdb-backend:8000 }
-    handle /tantra* { reverse_proxy masterdb-backend:8000 }
-    handle /runtime* { reverse_proxy masterdb-backend:8000 }
-    handle /shared* { reverse_proxy masterdb-backend:8000 }
-    handle /parikshak* { reverse_proxy masterdb-backend:8000 }
-    handle /niyantran* { reverse_proxy masterdb-backend:8000 }
-    handle /replay-registry* { reverse_proxy masterdb-backend:8000 }
-    handle /admin* { reverse_proxy masterdb-backend:8000 }
-    handle /auth* { reverse_proxy masterdb-backend:8000 }
-    handle {
-        root * /var/www/masterdb-control-center/dist
-        try_files {path} /index.html
-        file_server
-    }
-}
-```
+1. Set `VITE_MASTERDB_API_URL=https://api.masterdb.domain.com` in your build environment.
+2. Ensure the MASTERDB backend is configured with production CORS:
+   ```python
+   app.add_middleware(
+       CORSMiddleware,
+       allow_origins=["https://controlcenter.masterdb.domain.com"],
+       allow_credentials=True,
+       allow_methods=["*"],
+       allow_headers=["*"],
+   )
+   ```
+3. Ensure client upload body size allows up to 500 MiB on the backend gateway.
 
 ---
 
-## Build Environment Checklist
+## 5. Backend Operational Prerequisites
 
-Before building for production, verify:
-
-- [ ] MASTERDB backend is tested and accessible at the target URL
-- [ ] `VITE_MASTERDB_API_URL` is set correctly for the target environment (or left blank for reverse-proxy mode)
-- [ ] `npm run type-check` passes with 0 errors
-- [ ] `npm run lint` passes with 0 errors
-- [ ] `npm run build` completes successfully
-- [ ] `dist/` contents are deployed to the web server root
-- [ ] SPA fallback (`try_files` / `try_files`) is configured so React Router works
-- [ ] All API proxy paths are configured in the web server
-- [ ] CORS is configured on the MASTERDB backend if the frontend is served from a different origin
+For the Control Center to function properly, the MASTERDB backend service must be running with:
+1. **Health Endpoints Active:** `GET /health` and `GET /ready` responding.
+2. **Auth Mode Configured:** `POST /auth/token` issuing valid signed JWT tokens.
+3. **Database Registry Initialized:** `GET /databases` returning active target engines.
+4. **Storage Permissions:** File storage directories configured with write permissions for uploads up to 500 MiB.
+5. **CORS Configured:** Production origins permitted for cross-origin requests.
 
 ---
 
-## No Server-Side Rendering
+## 6. Pre-Flight Deployment Checklist
 
-This application does not use SSR. There is no Node.js process required at runtime. The `dist/` directory contains:
-
-- `index.html`
-- `assets/*.js` (bundled React application)
-- `assets/*.css` (compiled styles)
-
-Serve these as standard static files.
+- [x] All TypeScript checks pass (`npm run type-check`).
+- [x] All ESLint rules pass (`npm run lint`).
+- [x] Production build generated cleanly (`npm run build`).
+- [x] Zero hardcoded machine paths or localhost URLs in source files.
+- [x] Zero secrets, tokens, or passwords in repository or build assets.
+- [x] Maximum request body size configured to at least 500 MiB on reverse proxy.
+- [x] SPA fallback routing (`try_files $uri /index.html`) configured on web server.

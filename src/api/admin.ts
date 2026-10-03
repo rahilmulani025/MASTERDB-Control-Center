@@ -11,7 +11,7 @@ import type {
  * POST /auth/token
  */
 export async function getAdminToken(): Promise<string> {
-  return getAuthToken(['bhiv-admin'], 'control-center-admin');
+  return getAuthToken('bhiv-admin');
 }
 
 /**

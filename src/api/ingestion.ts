@@ -31,6 +31,15 @@ export async function getDatabases(): Promise<TargetDatabaseInfo[]> {
 /**
  * POST /ingest
  * Initiates a controlled ingestion request with Bearer JWT.
+ * Contract:
+ * {
+ *   "dataset_id": string,
+ *   "target_database": TargetDatabase,
+ *   "source_format": IngestionFormat,
+ *   "package_id": string | null,
+ *   "upload_id": string | null,
+ *   "metadata": {}
+ * }
  */
 export async function createIngestion(payload: IngestionRequest): Promise<IngestionJob> {
   const token = await getAuthToken();
@@ -39,12 +48,10 @@ export async function createIngestion(payload: IngestionRequest): Promise<Ingest
     dataset_id: payload.dataset_id,
     target_database: payload.target_database,
     source_format: payload.source_format,
+    package_id: payload.package_id && payload.package_id.trim() ? payload.package_id.trim() : null,
+    upload_id: payload.upload_id && payload.upload_id.trim() ? payload.upload_id.trim() : null,
     metadata: payload.metadata ?? {},
   };
-
-  if (payload.package_id && payload.package_id.trim()) {
-    body.package_id = payload.package_id.trim();
-  }
 
   return apiClient.request<IngestionJob>('/ingest', {
     method: 'POST',

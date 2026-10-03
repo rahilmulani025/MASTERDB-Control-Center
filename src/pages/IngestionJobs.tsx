@@ -375,12 +375,13 @@ export function IngestionJobs() {
                 }}
               >
                 <option value="ALL">All States</option>
+                <option value="PERSISTED">PERSISTED</option>
+                <option value="PARTIAL_PERSISTENCE">PARTIAL_PERSISTENCE</option>
+                <option value="REJECTED">REJECTED</option>
                 <option value="PENDING">PENDING</option>
                 <option value="RUNNING">RUNNING</option>
-                <option value="PERSISTED">PERSISTED</option>
                 <option value="COMPLETED">COMPLETED</option>
                 <option value="FAILED">FAILED</option>
-                <option value="REJECTED">REJECTED</option>
               </select>
             </div>
 
@@ -428,7 +429,7 @@ export function IngestionJobs() {
                       </tr>
                     ) : (
                       filteredJobs.map((job) => {
-                        const st = (job.state || job.status || 'PENDING').toUpperCase();
+                        const st = (job.status || job.state || 'PENDING').toUpperCase();
                         return (
                           <tr key={job.job_id}>
                             <td className="code-val">{job.job_id}</td>
@@ -440,11 +441,18 @@ export function IngestionJobs() {
                             <td style={{ textTransform: 'uppercase' }}>{String(job.source_format || '—')}</td>
                             <td>
                               <StatusBadge
-                                kind={st === 'COMPLETED' || st === 'PERSISTED' ? 'success' : st === 'FAILED' || st === 'REJECTED' ? 'danger' : 'info'}
+                                kind={
+                                  st === 'PERSISTED' || st === 'COMPLETED'
+                                    ? 'success'
+                                    : st === 'PARTIAL_PERSISTENCE'
+                                      ? 'warning'
+                                      : st === 'FAILED' || st === 'REJECTED'
+                                        ? 'danger'
+                                        : 'info'
+                                }
                               >
                                 {st}
                               </StatusBadge>
-
                             </td>
                             <td>{job.created_at ? new Date(job.created_at).toLocaleString() : '—'}</td>
                             <td>{job.actor || 'system'}</td>
@@ -610,7 +618,7 @@ export function IngestionJobs() {
               background: '#fff',
               borderRadius: '8px',
               padding: '24px',
-              maxWidth: '680px',
+              maxWidth: '720px',
               width: '100%',
               maxHeight: '90vh',
               overflowY: 'auto',
@@ -618,9 +626,14 @@ export function IngestionJobs() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>
-                Controlled Ingestion Job Detail: {inspectedJob.job_id}
-              </h3>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>
+                  Controlled Ingestion Job Detail: {inspectedJob.job_id}
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  Authoritative record from GET /ingest/jobs/&#123;job_id&#125;
+                </span>
+              </div>
               <button
                 type="button"
                 className="btn-ghost"
@@ -631,21 +644,152 @@ export function IngestionJobs() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {/* PARTIAL_PERSISTENCE banner */}
+            {(inspectedJob.status === 'PARTIAL_PERSISTENCE' || inspectedJob.state === 'PARTIAL_PERSISTENCE') && (
+              <div className="notice warning" style={{ marginBottom: '14px' }}>
+                <b>Partial Persistence:</b> Data was persisted, but the upload lifecycle could not be completed.
+              </div>
+            )}
+
+            {/* REJECTED banner */}
+            {(inspectedJob.status === 'REJECTED' || inspectedJob.state === 'REJECTED') && (
+              <div className="notice error" style={{ marginBottom: '14px' }}>
+                <b>Ingestion Rejected:</b> {inspectedJob.rejection_reason || 'Rejection reason not specified.'}
+              </div>
+            )}
+
+            {/* PERSISTED banner */}
+            {(inspectedJob.status === 'PERSISTED' || inspectedJob.state === 'PERSISTED') && (
+              <div className="notice success" style={{ marginBottom: '14px' }}>
+                <b>Data Persisted:</b> Data has been committed into {String(inspectedJob.target_database)}.
+                {inspectedJob.metadata?.target_reference && (
+                  <div style={{ marginTop: '4px' }}>
+                    Target Reference: <code className="code-val">{inspectedJob.metadata.target_reference}</code>
+                  </div>
+                )}
+                {inspectedJob.metadata?.records_persisted !== undefined && (
+                  <div>
+                    Records Persisted: <b>{inspectedJob.metadata.records_persisted}</b>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748b' }}>Job ID:</span>
+                <span className="code-val" style={{ fontWeight: 600 }}>{inspectedJob.job_id}</span>
+              </div>
+              {inspectedJob.trace_id && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Trace ID:</span>
+                  <span className="code-val">{inspectedJob.trace_id}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
                 <span style={{ color: '#64748b' }}>Dataset ID:</span>
                 <span className="code-val" style={{ fontWeight: 600 }}>{inspectedJob.dataset_id}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {inspectedJob.package_id && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Package ID:</span>
+                  <span className="code-val">{inspectedJob.package_id}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
                 <span style={{ color: '#64748b' }}>Target Database:</span>
                 <span style={{ fontWeight: 600 }}>{String(inspectedJob.target_database)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748b' }}>Source Format:</span>
+                <span className="code-val" style={{ textTransform: 'uppercase' }}>{String(inspectedJob.source_format)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
                 <span style={{ color: '#64748b' }}>Job State:</span>
-                <StatusBadge kind={inspectedJob.state === 'COMPLETED' ? 'success' : 'info'}>
-                  {inspectedJob.state || inspectedJob.status}
+                <StatusBadge
+                  kind={
+                    inspectedJob.status === 'PERSISTED' || inspectedJob.state === 'PERSISTED' || inspectedJob.state === 'COMPLETED'
+                      ? 'success'
+                      : inspectedJob.status === 'PARTIAL_PERSISTENCE' || inspectedJob.state === 'PARTIAL_PERSISTENCE'
+                        ? 'warning'
+                        : inspectedJob.status === 'REJECTED' || inspectedJob.state === 'REJECTED' || inspectedJob.state === 'FAILED'
+                          ? 'danger'
+                          : 'info'
+                  }
+                >
+                  {inspectedJob.status || inspectedJob.state}
                 </StatusBadge>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748b' }}>Actor:</span>
+                <span>{inspectedJob.actor || 'system'}</span>
+              </div>
+              {inspectedJob.roles && inspectedJob.roles.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Server Assigned Roles:</span>
+                  <span>{inspectedJob.roles.join(', ')}</span>
+                </div>
+              )}
+              {inspectedJob.certification_state && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Certification State:</span>
+                  <span>{inspectedJob.certification_state} (Score: {inspectedJob.integrity_score ?? '—'})</span>
+                </div>
+              )}
+              {inspectedJob.submitted_at && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Submitted At:</span>
+                  <span>{new Date(inspectedJob.submitted_at).toLocaleString()}</span>
+                </div>
+              )}
+              {inspectedJob.completed_at && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                  <span style={{ color: '#64748b' }}>Completed At:</span>
+                  <span>{new Date(inspectedJob.completed_at).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Pipeline Execution Step Audit */}
+            {inspectedJob.steps && inspectedJob.steps.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <h5 style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: 600 }}>
+                  Pipeline Step Execution Audit Trail
+                </h5>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {inspectedJob.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '8px 12px',
+                        background: step.passed ? '#f0fdf4' : '#fef2f2',
+                        border: `1px solid ${step.passed ? '#bbf7d0' : '#fecaca'}`,
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span style={{ fontWeight: 600, color: step.passed ? '#15803d' : '#b91c1c' }}>
+                        {step.passed ? '✓' : '✕'} {step.step}
+                      </span>
+                      <span style={{ color: '#64748b' }}>
+                        {step.detail || (step.passed ? 'PASSED' : 'FAILED')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setInspectedJob(null)}
+              >
+                Close Inspector
+              </button>
             </div>
           </div>
         </div>
@@ -789,7 +933,7 @@ export function IngestionJobs() {
 
             {/* Modal Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-              {inspectedUploadJob.status !== 'REJECTED' && inspectedUploadJob.status !== 'CANCELLED' && (
+              {inspectedUploadJob.status !== 'REJECTED' && (
                 <button
                   type="button"
                   className="btn-secondary"

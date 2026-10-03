@@ -50,14 +50,32 @@ export class ApiClient {
         const text = await response.text();
         let parsedDetail: unknown = text;
         let errorMessage = `MASTERDB request failed (${response.status}).`;
+        let errorType: string | undefined;
+
         try {
           const json = JSON.parse(text);
           parsedDetail = json;
           if (json && typeof json === 'object') {
-            if (typeof (json as { detail?: unknown }).detail === 'string') {
+            // 1. Authoritative contract: { error: { type: "...", message: "...", path: "..." } }
+            if ('error' in json && json.error && typeof json.error === 'object') {
+              const errObj = json.error as { message?: unknown; type?: unknown };
+              if (typeof errObj.message === 'string') {
+                errorMessage = errObj.message;
+              }
+              if (typeof errObj.type === 'string') {
+                errorType = errObj.type;
+              }
+            } else if (typeof (json as { detail?: unknown }).detail === 'string') {
               errorMessage = (json as { detail: string }).detail;
+            } else if (Array.isArray((json as { detail?: unknown }).detail)) {
+              // FastAPI/Pydantic validation error array
+              errorMessage = (json as { detail: Array<{ msg?: string; loc?: (string | number)[] }> }).detail
+                .map((d) => (d.msg ? `${d.loc && d.loc.length > 0 ? d.loc.join('.') + ': ' : ''}${d.msg}` : JSON.stringify(d)))
+                .join('; ');
             } else if (typeof (json as { message?: unknown }).message === 'string') {
               errorMessage = (json as { message: string }).message;
+            } else if (typeof (json as { rejection_reason?: unknown }).rejection_reason === 'string') {
+              errorMessage = (json as { rejection_reason: string }).rejection_reason;
             }
           }
         } catch {
@@ -67,10 +85,14 @@ export class ApiClient {
           }
         }
 
+        // Redact any JWT tokens in error messages
+        const sanitizedMessage = errorMessage.replace(/Bearer\s+[A-Za-z0-9-_.]+/gi, 'Bearer [REDACTED]');
+
         throw {
-          message: errorMessage,
+          message: sanitizedMessage,
           status: response.status,
           path,
+          type: errorType,
           detail: parsedDetail,
         } satisfies APIError;
       }

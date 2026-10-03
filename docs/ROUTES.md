@@ -1,155 +1,135 @@
-# MASTERDB Control Center — Route Reference
+# MASTERDB Control Center — Frontend Route Directory
 
-All routes are wrapped inside `<AppShell>` (persistent sidebar navigation + header). The router is defined in `src/routes/router.tsx`.
+> Complete inventory and reference of all client-side routes in the MASTERDB Control Center.
 
 ---
 
-## Route Table
+## 1. Route Map Summary
 
-| Path | Component | Live Backend Data | Key APIs |
+All routes are nested within the root layout `<AppShell>`, which provides the persistent navigation sidebar, system health indicator, and breadcrumb header.
+
+| Route Path | View Component | Operational Type | Live Backend APIs Used |
 |---|---|---|---|
-| `/` | (redirect) | — | Redirects to `/dashboard` |
-| `/dashboard` | `Dashboard` | Yes | `GET /health`, `GET /ready` |
-| `/datasets` | `Datasets` | Yes | `GET /discovery/packages` |
-| `/datasets/:datasetId` | `DatasetDetails` | Yes | See below |
-| `/ingestion` | `Ingestion` | No | Architecture overview only |
-| `/ingestion/jobs` | `Jobs` | No | Architecture overview only |
-| `/governance` | `Placeholder` | No | Placeholder (navigation entry) |
-| `/governance/validation` | `Placeholder` | No | Placeholder |
-| `/governance/certification` | `Placeholder` | No | Placeholder |
-| `/governance/retrieval` | `Placeholder` | No | Placeholder |
-| `/lineage` | `Placeholder` | No | Placeholder |
-| `/audit` | `Placeholder` | No | Placeholder |
-| `/observability` | `Observability` | Yes | `GET /health`, `GET /ready`, `GET /replay-registry/manifest` |
-| `/admin` | `Admin` | Yes | `POST /auth/token`, `GET /admin/configuration`, `GET /admin/backup`, `POST /admin/restore` |
-| `/admin/system` | `Admin` | Yes | Same as `/admin` |
-| `/admin/shared-data` | `Placeholder` | Partial | `GET /shared/registry`, `GET /shared/contracts` |
-| `*` | `NotFound` | No | 404 page |
+| `/` | `Navigate` (Redirect) | Read-Only | None (Redirects to `/dashboard`) |
+| `/dashboard` | `Dashboard` | Read-Only | `GET /health`, `GET /ready` |
+| `/datasets` | `Datasets` | Read-Only | `GET /discovery/packages` |
+| `/datasets/:datasetId` | `DatasetDetails` | Read + Controlled Mutation | 14 Package, Validation, MDU, and TANTRA APIs |
+| `/ingestion` | `ControlledIngestion` | Controlled Mutation | `GET /databases`, `POST /upload`, `POST /upload/{id}/content`, `POST /upload/{id}/validate`, `POST /ingest` |
+| `/ingestion/jobs` | `IngestionJobs` | Read-Only | `GET /ingest/jobs`, `GET /ingest/jobs/{id}`, `GET /databases/{key}/records/{id}` |
+| `/observability` | `Observability` | Read-Only | `GET /health`, `GET /ready`, `GET /metrics`, `GET /runtime/identity`, `GET /replay-registry/manifest` |
+| `/admin` | `Admin` | Read + Controlled Mutation | `POST /auth/token`, `GET /admin/configuration`, `GET /admin/backup`, `POST /admin/restore` |
+| `/admin/system` | `Admin` | Read + Controlled Mutation | Same as `/admin` |
+| `/admin/shared-data` | `Placeholder` | Read-Only | `GET /shared/registry`, `GET /shared/contracts` |
+| `/governance` | `Placeholder` | Read-Only | Navigation root placeholder |
+| `/lineage` | `Placeholder` | Read-Only | Navigation root placeholder |
+| `/audit` | `Placeholder` | Read-Only | Navigation root placeholder |
+| `*` | `NotFound` | Read-Only | None (404 Fallback) |
 
 ---
 
-## Route Detail
+## 2. Route Specifications
 
 ### `/dashboard`
-
-**Purpose:** Control-plane overview. Shows live MASTERDB backend liveness and readiness status.
-
-**APIs used:**
-- `GET /health` → liveness status
-- `GET /ready` → dependency readiness checks
-
-**Behavior:** Polls on mount. Displays health indicator, dependency status list, and link to Dataset Explorer.
+- **Component:** `Dashboard`
+- **Purpose:** System control-plane landing page. Provides immediate operational status of the MASTERDB backend cluster, storage subsystems, and certification engines.
+- **APIs:**
+  - `GET /health` — Liveness status
+  - `GET /ready` — Subsystem readiness matrix
+- **Interactions:** Auto-refreshes on mount; includes direct action buttons to browse datasets or trigger ingestion.
 
 ---
 
 ### `/datasets`
-
-**Purpose:** Dataset Explorer. Lists all discoverable dataset packages.
-
-**APIs used:**
-- `GET /discovery/packages` → returns array of package metadata
-
-**Behavior:** Loads all packages on mount. Each row links to `/datasets/{package_id}`.
-
-**Note:** Discovery returns the full package list. There is no server-side search or pagination in Stage 1.
+- **Component:** `Datasets`
+- **Purpose:** Sovereign Dataset Catalogue. Displays all discoverable packages in the registry.
+- **APIs:**
+  - `GET /discovery/packages` — Paginated catalogue of packages
+- **Interactions:** Search filter by package name/ID; sorting by creation timestamp and record count; click navigation to `/datasets/:datasetId`.
 
 ---
 
 ### `/datasets/:datasetId`
-
-**Purpose:** Full governance detail view for a single package. The `:datasetId` URL parameter is the `package_id` (not the logical `dataset_id`).
-
-**APIs used (all called on mount):**
-- `GET /packages/{package_id}` — package identity and state (also extracts `dataset_id`)
-- `GET /packages/{package_id}/history` — transition history
-- `GET /packages/{package_id}/lineage` — lineage and ancestors
-- `GET /packages/{package_id}/retrieval` — retrieval evidence
-- `GET /packages/{package_id}/audit` — audit completeness report
-- `GET /packages/{package_id}/replay` — replay consistency
-- `GET /status/{dataset_id}` — validation status
-- `GET /report/{dataset_id}` — validation report
-- `GET /mdu/provenance/{dataset_id}` — MDU provenance events
-- `GET /mdu/schema/{dataset_id}` — canonical schema
-- `GET /mdu/schema-compatibility/{dataset_id}` — schema compatibility
-- `GET /tantra/certification/{dataset_id}` — TANTRA certification
-- `GET /tantra/packages/{package_id}/retrieval-readiness` — retrieval readiness via TANTRA
-- `GET /tantra/packages/{package_id}/runtime` — bundled runtime state
-
-**Mutation triggers (explicit user action only):**
-- `POST /validate` — user clicks "Run Validation"
-- `POST /certify` — user clicks "Request Certification"
-- `POST /packages/{package_id}/knowledge-object` — user submits KO form
-
-**Important:** `:datasetId` in the URL path is the `package_id`. The logical `dataset_id` is resolved from the package detail response. See `docs/HANDOFF.md` §8.
+- **Component:** `DatasetDetails`
+- **Purpose:** Comprehensive 360-degree governance inspection and operational management for a specific package.
+- **Identifier Mapping:** `:datasetId` in the URL corresponds to the physical `package_id`. The logical `dataset_id` is parsed from the package response.
+- **APIs (Read):**
+  - `GET /packages/{package_id}`
+  - `GET /packages/{package_id}/history`
+  - `GET /packages/{package_id}/lineage`
+  - `GET /packages/{package_id}/retrieval`
+  - `GET /packages/{package_id}/audit`
+  - `GET /packages/{package_id}/replay`
+  - `GET /status/{dataset_id}`
+  - `GET /report/{dataset_id}`
+  - `GET /mdu/provenance/{dataset_id}`
+  - `GET /mdu/schema/{dataset_id}`
+  - `GET /mdu/schema-compatibility/{dataset_id}`
+  - `GET /tantra/certification/{dataset_id}`
+  - `GET /tantra/packages/{package_id}/retrieval-readiness`
+  - `GET /tantra/packages/{package_id}/runtime`
+- **APIs (Controlled Mutation):**
+  - `POST /validate` — Run validation evaluation
+  - `POST /certify` — Request MASTERDB certification
+  - `POST /packages/{package_id}/knowledge-object` — Register Knowledge Object
 
 ---
 
 ### `/ingestion`
-
-**Purpose:** Ingestion Architecture page. Describes the intended ingestion workflow conceptually.
-
-**Live data:** None. This is an informational/architecture page.
-
-**Stage 2 note:** When a backend ingestion API contract is defined, this page is the intended location for the upload UI.
+- **Component:** `ControlledIngestion`
+- **Purpose:** 4-step wizard for controlled dataset ingestion into sovereign target databases.
+- **Workflow:**
+  1. File selection & browser-side SHA-256 computation.
+  2. Upload session initialization (`POST /upload`).
+  3. Binary octet-stream upload (`POST /upload/{id}/content`).
+  4. Pre-ingestion validation (`POST /upload/{id}/validate`).
+  5. Dynamic target DB capability selection (`GET /databases`).
+  6. Final review & ingestion dispatch (`POST /ingest`).
+- **APIs:**
+  - `GET /databases` — Dynamic database capability matrix
+  - `POST /upload` — Session creation
+  - `POST /upload/{upload_id}/content` — Binary transfer
+  - `POST /upload/{upload_id}/validate` — Pre-validation
+  - `POST /ingest` — Submission to ingestion service
+  - `GET /ingest/jobs/{job_id}` — Polling job status
+  - `GET /databases/{database_key}/records/{dataset_id}` — Direct target read-back verification
 
 ---
 
 ### `/ingestion/jobs`
-
-**Purpose:** Ingestion Jobs page. Companion to `/ingestion`.
-
-**Live data:** None in Stage 1.
+- **Component:** `IngestionJobs`
+- **Purpose:** Ingestion job history monitor and persistence proof inspector.
+- **APIs:**
+  - `GET /ingest/jobs` — Complete list of ingestion execution records
+  - `GET /ingest/jobs/{job_id}` — Individual job detail modal
+  - `GET /databases/{database_key}/records/{dataset_id}` — Live persistence record reader
+- **Features:** Status filtering (`PERSISTED`, `FAILED`, `PROCESSING`), trace ID inspection, and live record inspection modal.
 
 ---
 
 ### `/observability`
-
-**Purpose:** System observability panel. Shows live health, readiness, runtime identity, and replay registry.
-
-**APIs used:**
-- `GET /health`
-- `GET /ready`
-- `GET /replay-registry/manifest`
-- `GET /runtime/identity` (TANTRA runtime identity)
-- `GET /shared/registry`
-- `GET /shared/contracts`
-- `GET /parikshak/review-references`
-- `GET /niyantran/task-state`
-
-**Behavior:** All data loaded on mount, read-only.
+- **Component:** `Observability`
+- **Purpose:** System-wide telemetry, runtime identity, and operational sync monitoring.
+- **APIs:**
+  - `GET /health` & `GET /ready`
+  - `GET /metrics`
+  - `GET /runtime/identity`
+  - `GET /replay-registry/manifest`
+  - `GET /shared/registry` & `GET /shared/contracts`
+  - `GET /parikshak/review-references` & `GET /niyantran/task-state`
 
 ---
 
-### `/admin` and `/admin/system`
-
-**Purpose:** Admin control panel. Configuration audit, backup, and protected restore.
-
-**APIs used:**
-- `POST /auth/token` — obtain admin bearer token
-- `GET /admin/configuration` — configuration validation report
-- `GET /admin/backup` — generate backup snapshot (user-triggered)
-- `POST /admin/restore` — restore from snapshot (user-confirmed)
-
-**Safety:** Backup requires explicit button click. Restore requires: valid JSON, acknowledgement checkbox, and confirm dialog.
+### `/admin` & `/admin/system`
+- **Component:** `Admin`
+- **Purpose:** Administrative operations panel protected by `bhiv-admin` Bearer token.
+- **APIs:**
+  - `POST /auth/token` — Bearer token acquisition
+  - `GET /admin/configuration` — Sanitized configuration compliance report
+  - `GET /admin/backup` — Export full JSON system snapshot (User-triggered)
+  - `POST /admin/restore` — Destructive state restoration (Protected with acknowledgement gate)
 
 ---
 
-### `/admin/shared-data`
-
-**Purpose:** Placeholder for Shared Data Registry inspection.
-
-**Current state:** Placeholder component. The Observability page already renders shared registry and contract data.
-
----
-
-### `*` (NotFound)
-
-**Purpose:** Catch-all 404 page. Renders for any unmatched path.
-
----
-
-## Redirect Behavior
-
-| From | To | Type |
-|---|---|---|
-| `/` | `/dashboard` | `<Navigate replace>` |
+### `*` (Catch-All)
+- **Component:** `NotFound`
+- **Purpose:** Graceful fallback for non-existent routes with navigation link back to `/dashboard`.

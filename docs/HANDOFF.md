@@ -1,317 +1,169 @@
-# MASTERDB Control Center — Developer Handoff
+# MASTERDB Control Center — Engineering Handoff
 
-> A developer joining the project should understand the system in 10–15 minutes by reading this document.
-
----
-
-## 1. Project Purpose
-
-MASTERDB Control Center is an **enterprise governance frontend** for the MASTERDB dataset management platform. It gives engineers and data governance teams:
-
-- Visibility into the full lifecycle of every registered dataset package
-- Tooling to trigger and inspect validation, certification, and knowledge-object registration
-- Read-only inspection of schemas, compatibility reports, provenance, and audit logs
-- Admin controls for configuration auditing, backup, and protected data restore
-- Cross-service operational views (Parikshak, Niyantran, Replay Registry)
-
-The frontend does **not** have its own persistent storage. All state lives in the MASTERDB backend.
+> Complete engineering guide and operational handoff for the MASTERDB Control Center and Controlled Data Ingestion system.
 
 ---
 
-## 2. Repository Structure
+## 1. Project Overview
+
+The **MASTERDB Control Center** is the unified enterprise frontend for the sovereign MASTERDB platform. It provides operational visibility, dataset governance tracking, schema compliance inspection, and end-to-end **Controlled Data Ingestion** across multiple sovereign database engines.
+
+> **Key Architectural Principle:** The Control Center is an interface over authoritative MASTERDB APIs. It does not contain its own database or replace backend ingestion, routing, or governance logic.
+
+---
+
+## 2. Ownership & Responsibility Boundaries
+
+| Area | Lead | Core Responsibilities |
+|---|---|---|
+| **Frontend & UI/UX** | **Rahil** | MASTERDB Control Center SPA, UI design system, React component hierarchy, API client orchestration, controlled ingestion workflow wizard, job polling, evidence display, and database read-back inspection. |
+| **Backend & Ingestion** | **Kavy** | MASTERDB FastAPI service, authoritative REST contracts, sovereign storage persistence, database routing, server-side RBAC enforcement, validation engine, certification gates, and audit trails. |
+
+---
+
+## 3. System Architecture
 
 ```
-MASTERDB-Control-Center-Stage1/
-│
-├── README.md                  # Project overview and quick-start
-├── package.json               # Scripts and dependencies
-├── package-lock.json          # Locked dependency tree
-├── vite.config.ts             # Vite build config + dev proxy rules
-├── tsconfig.json              # TypeScript project references root
-├── tsconfig.app.json          # App source TypeScript config
-├── tsconfig.node.json         # Node/Vite config TypeScript config
-├── eslint.config.js           # ESLint configuration
-├── index.html                 # Vite HTML entrypoint
-├── .env.example               # Environment variable template
-├── .gitignore                 # Files excluded from version control
-│
-├── docs/
-│   ├── HANDOFF.md             # This file — developer onboarding guide
-│   ├── ROUTES.md              # Route reference
-│   ├── API-INTEGRATION.md     # API endpoint reference
-│   └── DEPLOYMENT.md          # Deployment guide
-│
-├── Reffrences/
-│   ├── API_DOCUMENTATION.md   # Original backend API reference document
-│   └── *.zip                  # Backend source reference archive
-│
-├── backend/
-│   └── bhiv-masterdb-ingestion-certification-service-main/
-│                              # Backend source reference (for API inspection only)
-│
-└── src/
-    ├── api/                   # All backend API call functions
-    ├── app/                   # React app entry (App.tsx)
-    ├── components/            # Reusable UI primitives (ui.tsx)
-    ├── layouts/               # AppShell (persistent navigation + shell)
-    ├── lib/                   # Configuration (config.ts)
-    ├── pages/                 # All page implementations (Pages.tsx)
-    ├── routes/                # React Router definition (router.tsx)
-    ├── styles/                # Global CSS design system (global.css)
-    ├── types/                 # TypeScript types for all API shapes (masterdb.ts)
-    ├── main.tsx               # Vite/React bootstrap
-    └── vite-env.d.ts          # Vite env type declarations
+                               ┌──────────────────────────────────────────────┐
+                               │           Web Browser (Control Center)       │
+                               │        React 18 + TypeScript + Vanilla CSS   │
+                               └──────────────────────┬───────────────────────┘
+                                                      │
+                                                      │ REST (JSON & Octet-Stream)
+                                                      │ Bearer Auth
+                                                      ▼
+                               ┌──────────────────────────────────────────────┐
+                               │           MASTERDB FastAPI Backend           │
+                               │        (Port 8000 / Production URL)          │
+                               └───────┬──────────────┬──────────────┬────────┘
+                                       │              │              │
+                       ┌───────────────┘              │              └───────────────┐
+                       ▼                              ▼                              ▼
+          ┌──────────────────────────┐   ┌──────────────────────────┐   ┌──────────────────────────┐
+          │     Package Registry     │   │    Validation & Cert     │   │ Controlled Ingestion Svc │
+          │ - Package metadata       │   │ - MDU Schema Engine      │   │ - Session & Hash Verify  │
+          │ - Lifecycle states       │   │ - TANTRA Cert Gates      │   │ - Target DB Routing      │
+          │ - Lineage & Provenance   │   │ - Rule-based validation  │   │ - Read-Back Verification │
+          └──────────────────────────┘   └──────────────────────────┘   └─────────────┬────────────┘
+                                                                                      │
+                                 ┌────────────────────────────────────────────────────┴────────────────────────────────┐
+                                 ▼                              ▼                              ▼                       ▼
+                       ┌───────────────────┐          ┌───────────────────┐          ┌───────────────────┐   ┌───────────────────┐
+                       │   RelationalDB    │          │     VectorDB      │          │   DocumentStore   │   │  Ledger / Object  │
+                       │ (SQLite/Postgres) │          │(FAISS / Embeddings│          │  (JSON / Reports) │   │  (Audit / Blobs)  │
+                       └───────────────────┘          └───────────────────┘          └───────────────────┘   └───────────────────┘
 ```
 
 ---
 
-## 3. Frontend Architecture
-
-### Entry Point
-`src/main.tsx` → mounts `<App />` into `#root`
-
-### App
-`src/app/App.tsx` → renders `<RouterProvider>` with the router
-
-### Router
-`src/routes/router.tsx` → defines all routes, wrapping them in `<AppShell>`
-
-### AppShell
-`src/layouts/AppShell.tsx` → persistent navigation sidebar + header; renders `<Outlet>` for page content
-
-### Pages
-`src/pages/Pages.tsx` → all page components in a single file. Each page is a React component that:
-- Calls the appropriate API function(s) via `useEffect`
-- Manages local state (`useState`) for loading, error, and data
-- Renders content using shared UI primitives from `src/components/ui.tsx`
-
-### UI Primitives
-`src/components/ui.tsx` → lightweight shared components: `StatusBadge`, `MetaRow`, `Section`, `ErrorPanel`, `LoadingSpinner`, etc.
-
-### API Layer
-`src/api/` — one file per backend subsystem. Each file exports typed async functions that call `apiClient.request()`.
-
-`src/api/client.ts` — the `ApiClient` class:
-- Constructs absolute URLs when `VITE_MASTERDB_API_URL` is set, relative paths otherwise
-- Applies a 10-second request timeout via `AbortController`
-- Normalizes HTTP and network errors into a consistent `APIError` shape
-- Handles both JSON and plain-text responses
-
-### Configuration
-`src/lib/config.ts` — reads `VITE_MASTERDB_API_URL` from the Vite environment, strips trailing slash.
-
-### Types
-`src/types/masterdb.ts` — TypeScript interfaces for every API response and request body. These mirror the backend Pydantic schemas.
-
-### Styles
-`src/styles/global.css` — vanilla CSS design system with CSS custom properties (design tokens), dark theme, component classes, and responsive layout utilities.
-
----
-
-## 4. API Architecture
-
-### Design Principles
-- All API calls go through `ApiClient.request<T>()` — no raw `fetch` in page components
-- API modules export pure async functions — no React hooks
-- Pages call API functions inside `useEffect` and manage their own loading/error/data state
-- Mutations (POST) are all explicit user actions — never triggered on mount except token refresh
-
-### Admin Token Flow
-Admin operations require a bearer token:
-1. `getAdminToken()` in `src/api/admin.ts` calls `POST /auth/token`
-2. The token is cached in module-level memory (not localStorage)
-3. The token is refreshed if < 60 seconds remain before expiry
-4. The token is attached as `Authorization: Bearer <token>` on admin requests
-
----
-
-## 5. Data Flow (Typical Page)
+## 4. Frontend Codebase Organization
 
 ```
-User navigates to /datasets/:datasetId
-  │
-  ▼
-DatasetDetails component mounts
-  │
-  ▼
-useEffect fires
-  │
-  ├── getPackage(packageId)          → GET /packages/{package_id}
-  │     └── extracts dataset_id from response
-  │
-  ├── getValidationStatus(datasetId) → GET /status/{dataset_id}
-  ├── getValidationReport(datasetId) → GET /report/{dataset_id}
-  ├── getPackageHistory(packageId)   → GET /packages/{package_id}/history
-  ├── getPackageLineage(packageId)   → GET /packages/{package_id}/lineage
-  ├── getMDUProvenance(datasetId)    → GET /mdu/provenance/{dataset_id}
-  ├── getMDUSchema(datasetId)        → GET /mdu/schema/{dataset_id}
-  ├── ... (more parallel calls)
-  │
-  ▼
-State updates → component re-renders with data, loading, or error states
+src/
+├── api/                       # Typed API client modules (one per subsystem)
+│   ├── admin.ts               # Configuration, backup, and restore
+│   ├── auth.ts                # Token acquisition and session state
+│   ├── client.ts              # Unified ApiClient with error unwrapping and timeout
+│   ├── discovery.ts           # Package catalogue discovery
+│   ├── health.ts              # System liveness and readiness
+│   ├── ingestion.ts           # Controlled ingestion submission and job tracking
+│   ├── lineage.ts             # Lineage graph fetching
+│   ├── mdu.ts                 # Canonical MDU schema and compatibility
+│   ├── operations.ts          # Operational sync (Parikshak, Niyantran, Replay)
+│   ├── packages.ts            # Package detail, history, audit, and replay
+│   ├── tantra.ts              # TANTRA certification and runtime state
+│   ├── upload.ts              # Upload session init, binary transfer, format check
+│   └── validation.ts          # Dataset validation and certification triggers
+├── components/
+│   └── ui.tsx                 # Shared UI primitives (StatusBadge, DataTable, Modal, Cards)
+├── layouts/
+│   └── AppShell.tsx           # Persistent sidebar navigation and header
+├── pages/
+│   ├── ControlledIngestion.tsx# Full-lifecycle 4-step controlled ingestion wizard
+│   ├── IngestionJobs.tsx      # Real-time ingestion job monitor with read-back proof
+│   └── Pages.tsx              # Dashboard, Datasets, DatasetDetails, Observability, Admin
+├── routes/
+│   └── router.tsx             # React Router route tree
+├── styles/
+│   └── global.css             # Vanilla CSS design tokens and dark mode styling
+├── types/
+│   └── masterdb.ts            # Strict TypeScript interfaces matching backend models
+└── main.tsx                   # React 18 DOM mount point
 ```
 
-All calls are independent and fire concurrently via `Promise.allSettled` or parallel `useEffect` calls.
+---
+
+## 5. Controlled Ingestion Integration
+
+The Controlled Ingestion interface implements a secure, validated 4-step workflow:
+
+1. **File Selection & Checksum:** Computes SHA-256 in the browser before transfer.
+2. **Session Initialization (`POST /upload`):** Registers expected file size, format, and hash.
+3. **Binary Octet-Stream Transfer (`POST /upload/{id}/content`):** Streams file with `Content-Type: application/octet-stream`.
+4. **Pre-Validation (`POST /upload/{id}/validate`):** Verifies file structure and records detected.
+5. **Dynamic Target DB Selection:** Fetches supported targets via `GET /databases` and dynamically disables incompatible engines.
+6. **Ingestion Submission (`POST /ingest`):** Dispatches job with top-level `upload_id`, `package_id`, and `dataset_id`.
+7. **Job Polling & Target DB Read-Back:** Polls `GET /ingest/jobs/{id}` and executes `GET /databases/{key}/records/{dataset_id}` for verified evidence.
 
 ---
 
-## 6. Route Map
+## 6. Authentication & RBAC
 
-| Path | Component | Live data |
+- **Endpoint:** `POST /auth/token`
+- **Request:** `{"actor": "bhiv-admin", "password": null, "roles": ["ignored"]}`
+- **Server Authority:** The backend assigns roles server-side based on `actor`. Client-supplied roles are safely ignored.
+- **In-Memory Caching:** The JWT access token is stored in memory (never written to `localStorage` or `cookies`) and refreshed automatically before expiration.
+- **Protected Actions:**
+  - `POST /upload` and `POST /ingest` require `operator` or `admin` or `bhiv-admin`.
+  - `/admin/*` endpoints require `bhiv-admin`.
+  - Unauthenticated requests return `401 Unauthorized`.
+  - Unauthorized roles return `403 Forbidden`.
+
+---
+
+## 7. Environment Configuration
+
+The application uses a single environment variable:
+
+| Variable | Default (Local Dev) | Description |
 |---|---|---|
-| `/` | redirect → `/dashboard` | — |
-| `/dashboard` | `Dashboard` | health, readiness |
-| `/datasets` | `Datasets` | discovery packages |
-| `/datasets/:datasetId` | `DatasetDetails` | all package governance APIs |
-| `/ingestion` | `Ingestion` | architecture page only (read-only) |
-| `/ingestion/jobs` | `Jobs` | architecture page only (read-only) |
-| `/observability` | `Observability` | health, readiness, replay registry |
-| `/admin` | `Admin` | admin token, configuration, backup, restore |
-| `/admin/system` | `Admin` | same as `/admin` |
-| `/admin/shared-data` | `Placeholder` | shared registry, contracts |
-| `*` | `NotFound` | none |
+| `VITE_MASTERDB_API_URL` | `""` (Empty string) | Base URL of the MASTERDB backend service. |
+
+- **Local Development:** When left empty, Vite dev server proxies API calls to `http://127.0.0.1:8000`.
+- **Production (Reverse Proxy):** When left empty, browser requests use relative paths (`/health`, `/ingest`), which the reverse proxy (Nginx, Caddy) routes to the backend.
+- **Production (Direct Cross-Origin):** Set `VITE_MASTERDB_API_URL=https://api.yourhost.com` if frontend and backend are hosted on separate domains.
 
 ---
 
-## 7. API Module Map
-
-| File | Subsystem | Functions |
-|---|---|---|
-| `health.ts` | Health/Readiness | `getHealth`, `getReadiness` |
-| `discovery.ts` | Discovery | `getDiscoveredPackages` |
-| `packages.ts` | Packages | `getPackage`, `getPackageHistory` |
-| `validation.ts` | Validation | `validateDataset`, `getValidationStatus`, `getValidationReport` |
-| `certification.ts` | Certification | `certifyDataset` |
-| `lineage.ts` | Lineage | `getPackageLineage` |
-| `mdu.ts` | MDU | `getMDUProvenance`, `getMDUSchema`, `getMDUSchemaCompatibility` |
-| `tantra.ts` | TANTRA | `getTantraCertification`, `getRetrievalReadiness`, `getPackageRuntime` |
-| `retrieval.ts` | Retrieval | `getPackageRetrieval` |
-| `knowledgeObject.ts` | Knowledge Objects | `registerKnowledgeObject` |
-| `audit.ts` | Audit/Replay | `getPackageAudit`, `getPackageReplay` |
-| `operations.ts` | Operations | `getRuntimeIdentity`, `getSharedRegistry`, `getSharedContracts`, `getParikshakReviewReferences`, `getNiyantranTaskState`, `getReplayRegistryManifest` |
-| `admin.ts` | Admin | `getAdminToken`, `getAdminConfiguration`, `createAdminBackup`, `restoreAdminBackup` |
-| `auth.ts` | Auth | (empty — token logic is in admin.ts) |
-| `ingestion.ts` | Ingestion | (empty — deferred Stage 2) |
-| `client.ts` | HTTP client | `ApiClient`, `apiClient` |
-| `index.ts` | Re-export | `apiClient` |
-
----
-
-## 8. Dataset / Package Identifier Mapping
-
-**This is the most important integration detail for future developers.**
-
-Two distinct identifier types are used:
-
-| Identifier | Source | Used By |
-|---|---|---|
-| `package_id` | URL path parameter (from discovery list) | `/packages/{package_id}/*` endpoints |
-| `dataset_id` | Field inside the package detail response | `/validate`, `/status`, `/report`, `/certify`, `/mdu/*`, `/tantra/certification/*` |
-
-**Example flow:**
-1. User clicks a package in the Dataset Explorer → navigates to `/datasets/{package_id}`
-2. `DatasetDetails` loads `GET /packages/{package_id}` → response contains `dataset_id`
-3. All downstream governance calls use the extracted `dataset_id`
-
-Do not pass `package_id` to endpoints that expect `dataset_id`. They are different values.
-
----
-
-## 9. Mutation Endpoints
-
-All write operations in the frontend. These should be reviewed carefully.
-
-| Function | Method | Endpoint | Trigger |
-|---|---|---|---|
-| `validateDataset` | POST | `/validate` | User clicks "Run Validation" |
-| `certifyDataset` | POST | `/certify` | User clicks "Request Certification" |
-| `registerKnowledgeObject` | POST | `/packages/{id}/knowledge-object` | User submits KO form |
-| `createAdminBackup` | GET | `/admin/backup` | User clicks "Generate Backup" |
-| `restoreAdminBackup` | POST | `/admin/restore` | User confirms restore dialog |
-| `getAdminToken` | POST | `/auth/token` | Auto, before admin API calls |
-
----
-
-## 10. Read-Only Endpoints
-
-All other endpoints are read-only (GET). See `docs/API-INTEGRATION.md` for the full reference.
-
----
-
-## 11. Admin Safety Boundaries
-
-| Boundary | Implementation |
-|---|---|
-| Configuration | GET only — never POSTs configuration changes |
-| Backup | User must click button — never called on component mount |
-| Restore | Requires: valid JSON in textarea, checkbox acknowledgement, confirm dialog |
-| Token | Memory-only, 1-minute expiry buffer, never stored persistently |
-
----
-
-## 12. Environment Variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_MASTERDB_API_URL` | Optional | Base URL for the MASTERDB backend. Leave blank to use Vite proxy (dev) or relative paths (production). |
-
-Only one environment variable. No secrets, no tokens, no credentials.
-
----
-
-## 13. Local Development
+## 8. Local Setup & Commands
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Copy environment template
-cp .env.example .env
-# Edit .env if needed — can leave VITE_MASTERDB_API_URL blank to use Vite proxy
-
-# 3. Start MASTERDB backend (separate terminal)
-# (follow backend repo instructions)
-
-# 4. Start frontend dev server
+# 2. Start development server
 npm run dev
-# → http://127.0.0.1:5173
+# Running at http://127.0.0.1:5173
+
+# 3. Type-check TypeScript codebase
+npm run type-check
+
+# 4. Run ESLint code quality checks
+npm run lint
+
+# 5. Build production bundle
+npm run build
+# Emits compiled assets to dist/
 ```
 
-The Vite dev server in `vite.config.ts` proxies these paths to `http://127.0.0.1:8000`:
-`/health`, `/ready`, `/discovery`, `/packages`, `/validate`, `/status`, `/report`, `/certify`, `/mdu`, `/tantra`, `/runtime`, `/shared`, `/parikshak`, `/niyantran`, `/replay-registry`, `/admin`, `/auth`
-
 ---
 
-## 14. Production Deployment Considerations
+## 9. Verification & Acceptance Summary
 
-See `docs/DEPLOYMENT.md` for the full guide. Key points:
+The system is fully verified against the authoritative live backend:
 
-1. Run `npm run build` → produces `dist/`
-2. Serve `dist/` as static files
-3. Configure your reverse proxy to forward all API paths to the MASTERDB backend
-4. Set `VITE_MASTERDB_API_URL=` (blank) at build time if using a reverse proxy on the same host
-5. Set `VITE_MASTERDB_API_URL=https://api.yourhost.com` if the backend is on a different host
-
----
-
-## 15. Known Limitations (Stage 1)
-
-| Limitation | Reason |
-|---|---|
-| No browser-side dataset upload/ingestion | Backend upload contract not defined in Stage 1 |
-| No server-side package search/filter | Discovery endpoint returns full list only — no search parameters |
-| No outbound telemetry mutations | Frontend-initiated telemetry push not within Stage 1 governance scope |
-| Ingestion & Jobs pages are informational | Architecture overview pages only — backend contract pending |
-
----
-
-## 16. Future Stage 2 Considerations
-
-The following functionality is **outside Stage 1 scope** and may be addressed in Stage 2:
-
-- **Browser-side ingestion** — if the backend exposes a multipart upload or ingestion-job API with clear contract, the `src/api/ingestion.ts` stub and `Ingestion`/`Jobs` pages are ready to be extended
-- **Server-side package search** — if the discovery endpoint gains query parameters, the Dataset Explorer can be enhanced with a search UI
-- **Outbound telemetry controls** — if governance permits frontend-initiated telemetry push, the Observability panel is the natural location
-- **Real-time updates** — if the backend gains WebSocket or SSE endpoints, the Dashboard and Observability panels could be extended
-- **Additional operational capabilities** — as downstream services (Parikshak, Niyantran) expose more backend APIs, corresponding frontend panels can be added to the Operations section
-- **Authentication / login UI** — if the backend adds user-scoped authentication (not just service role tokens), a login page may be appropriate
+- **E2E Proof:** Upload `upl-613917ce2612` → Ingestion `ingest-26afcc5fcae7` → State `PERSISTED` → Read-back returned 2 verified records.
+- **Type-Check:** 0 TypeScript compilation errors.
+- **Lint:** 0 ESLint warnings or errors.
+- **Build:** Clean production bundle generated.
+- **Security:** Verified 401, 403, path traversal protection, server-side role assignment, and zero credential leakage.

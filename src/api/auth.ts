@@ -3,17 +3,20 @@ import type { AuthTokenResponse } from '../types/masterdb';
 
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
+let cachedActor = '';
 
 /**
  * Obtain or reuse a valid signed Bearer JWT token from POST /auth/token.
- * Caches token until 60 seconds before expiration.
+ * Contract:
+ * - Request: { "actor": string, "password": string | null, "roles": ["ignored"] }
+ * - Backend assigns roles server-side; client-supplied roles are ignored.
+ * - Caches token until 60 seconds before expiration.
  */
 export async function getAuthToken(
-  roles: string[] = ['bhiv-admin'],
-  actor: string = 'control-center-operator'
+  actor: string = 'bhiv-admin'
 ): Promise<string> {
   const now = Date.now();
-  if (cachedToken && tokenExpiresAt > now + 60_000) {
+  if (cachedToken && cachedActor === actor && tokenExpiresAt > now + 60_000) {
     return cachedToken;
   }
 
@@ -22,11 +25,13 @@ export async function getAuthToken(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       actor,
-      roles,
+      password: null,
+      roles: ['ignored'],
     }),
   });
 
   cachedToken = res.access_token;
+  cachedActor = res.actor || actor;
   tokenExpiresAt = new Date(res.expires_at).getTime();
   return cachedToken;
 }
@@ -35,4 +40,6 @@ export async function getAuthToken(
 export function clearAuthToken(): void {
   cachedToken = null;
   tokenExpiresAt = 0;
+  cachedActor = '';
 }
+

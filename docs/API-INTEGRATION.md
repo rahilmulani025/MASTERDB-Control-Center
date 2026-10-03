@@ -1,220 +1,201 @@
-# MASTERDB Control Center — API Integration Reference
+# MASTERDB Control Center — Frontend API Integration Architecture
 
-This document is for **frontend maintainers**. It describes every backend endpoint the frontend calls, organized by subsystem. It is not a full OpenAPI document.
-
-For implementation details, see the corresponding file in `src/api/`.
+> Architectural guide to the API integration layer in the MASTERDB Control Center.
 
 ---
 
-## Identifier Notes
+## 1. Integration Principles
 
-Before reading this reference, understand the two identifiers used:
+The integration layer bridges the React Single Page Application and the MASTERDB FastAPI backend under the following core rules:
 
-| Identifier | Meaning |
-|---|---|
-| `package_id` | Physical artifact/package identifier — used in `/packages/{package_id}/*` |
-| `dataset_id` | Logical dataset identifier — used in `/validate`, `/status`, `/report`, `/certify`, `/mdu/*`, `/tantra/certification/*` |
-
-These are **different values**. `dataset_id` is extracted from the package detail response.
-
----
-
-## Health
-
-**Source file:** `src/api/health.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/health` | Read-only | Liveness check — displayed on Dashboard and Observability |
-| GET | `/ready` | Read-only | Readiness checks — dependency status displayed on Dashboard and Observability |
-
-**Response shapes:**
-- `/health` → `HealthResponse { status: string }`
-- `/ready` → `ReadinessResponse { status: string, checks: Record<string, unknown> }`
+1. **Centralized Client:** All network traffic flows exclusively through `ApiClient` (`src/api/client.ts`). No raw `fetch` calls are made within React components.
+2. **Strict Type Safety:** Every request payload and response schema is typed in `src/types/masterdb.ts`, directly mirroring backend Pydantic models.
+3. **Graceful Error Normalization:** Backend error formats (including nested `{ "error": { "message": "...", "type": "...", "path": "..." } }` and Pydantic validation error lists) are normalized into standard `APIError` objects.
+4. **Token Security:** Bearer tokens are stored in volatile JavaScript memory (never in `localStorage` or browser storage) to prevent token leakage.
+5. **No Direct Database Access:** The client interacts with storage engines exclusively via the MASTERDB REST gateway.
 
 ---
 
-## Discovery
+## 2. API Client Implementation
 
-**Source file:** `src/api/discovery.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/discovery/packages` | Read-only | Fetches full package list for Dataset Explorer |
-
-**Response shape:** `DiscoveryResponse` — array of package metadata objects
-
-**Note:** No search parameters are supported. The full list is returned. Filtering is done client-side.
-
----
-
-## Packages
-
-**Source file:** `src/api/packages.ts`, `src/api/lineage.ts`, `src/api/retrieval.ts`, `src/api/audit.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/packages/{package_id}` | Read-only | Full package detail; extracts `dataset_id` |
-| GET | `/packages/{package_id}/history` | Read-only | Governance transition history |
-| GET | `/packages/{package_id}/lineage` | Read-only | Lineage (ancestors and descendants) |
-| GET | `/packages/{package_id}/retrieval` | Read-only | Retrieval evidence and rule evaluations |
-| GET | `/packages/{package_id}/audit` | Read-only | Audit completeness report |
-| GET | `/packages/{package_id}/replay` | Read-only | Replay consistency verification |
-| POST | `/packages/{package_id}/knowledge-object` | **Mutation** | Register a knowledge object (user-triggered) |
-
-**Key mapping:** `package_id` comes from the URL parameter `:datasetId` in the route `/datasets/:datasetId`.
-
----
-
-## Validation
-
-**Source file:** `src/api/validation.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| POST | `/validate` | **Mutation** | Trigger validation run (user-triggered) |
-| GET | `/status/{dataset_id}` | Read-only | Compact validation status |
-| GET | `/report/{dataset_id}` | Read-only | Full validation report with field-level results |
-
-**Request body for POST `/validate`:**
-```json
-{
-  "dataset_id": "<dataset_id>",
-  "package_id": "<package_id>"
-}
-```
-
-**Note:** Uses `dataset_id`, not `package_id`, for the GET paths.
-
----
-
-## Certification
-
-**Source file:** `src/api/certification.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| POST | `/certify` | **Mutation** | Trigger MASTERDB certification (user-triggered) |
-
-**Request body:**
-```json
-{
-  "dataset_id": "<dataset_id>",
-  "package_id": "<package_id>"
-}
-```
-
----
-
-## MDU (Master Data Unit)
-
-**Source file:** `src/api/mdu.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/mdu/provenance/{dataset_id}` | Read-only | MDU provenance event history |
-| GET | `/mdu/schema/{dataset_id}` | Read-only | Canonical schema contract from MDU |
-| GET | `/mdu/schema-compatibility/{dataset_id}` | Read-only | Schema compatibility between local version and MDU |
-
-**Query parameter for compatibility:**
-- `?local_schema_version=<version>` (default: `1.0`)
-
-**Availability:** MDU endpoints may return 502/unavailable if MDU is not accessible from the backend. This is expected and handled gracefully in the UI.
-
----
-
-## TANTRA
-
-**Source file:** `src/api/tantra.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/tantra/certification/{dataset_id}` | Read-only | TANTRA certification status for a dataset |
-| GET | `/tantra/packages/{package_id}/retrieval-readiness` | Read-only | Retrieval readiness via TANTRA |
-| GET | `/tantra/packages/{package_id}/runtime` | Read-only | Bundled TANTRA runtime state |
-
-**Note:** TANTRA certification uses `dataset_id`; retrieval-readiness and runtime use `package_id`.
-
----
-
-## Knowledge Objects
-
-**Source file:** `src/api/knowledgeObject.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| POST | `/packages/{package_id}/knowledge-object` | **Mutation** | Register a knowledge object with provenance pointer |
-
-**Request body:**
-```json
-{
-  "knowledge_type": "<type>",
-  "content_reference": "<uri>",
-  "description": "<text>"
-}
-```
-
----
-
-## Runtime / Operations
-
-**Source file:** `src/api/operations.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| GET | `/runtime/identity` | Read-only | TANTRA runtime identity and capabilities manifest |
-| GET | `/shared/registry` | Read-only | Shared data registry entries |
-| GET | `/shared/contracts` | Read-only | Shared service convergence contracts |
-| GET | `/parikshak/review-references` | Read-only | Parikshak engineering review sync status |
-| GET | `/niyantran/task-state` | Read-only | Niyantran operational task lifecycle state |
-| GET | `/replay-registry/manifest` | Read-only | Replay-capable subsystem manifest |
-
-All operations endpoints are **read-only**.
-
----
-
-## Admin
-
-**Source file:** `src/api/admin.ts`
-
-| Method | Path | Classification | Frontend purpose |
-|---|---|---|---|
-| POST | `/auth/token` | Auth | Obtain signed bearer token for admin operations |
-| GET | `/admin/configuration` | Read-only | Configuration validation report (no secrets returned) |
-| GET | `/admin/backup` | Controlled | Generate backup snapshot (user-triggered, not automatic) |
-| POST | `/admin/restore` | **Destructive** | Restore from snapshot (requires safety acknowledgement) |
-
-**Authorization:** All admin endpoints require `Authorization: Bearer <token>` header. Token is obtained via `POST /auth/token`.
-
-**Token request body:**
-```json
-{
-  "actor": "control-center-admin",
-  "roles": ["bhiv-admin"]
-}
-```
-
-**Safety rules for restore:**
-1. User must paste valid JSON snapshot into the textarea
-2. User must check the acknowledgement checkbox
-3. User must confirm the browser confirm dialog
-4. Only then is `POST /admin/restore` called
-
----
-
-## Error Handling
-
-All API calls are wrapped by `ApiClient.request<T>()`. Errors are normalized to:
+The `ApiClient` class provides robust HTTP request orchestration:
 
 ```typescript
-interface APIError {
-  message: string;
-  status?: number;   // HTTP status code, if available
-  path: string;      // API path that failed
-  detail?: string;   // Raw response body, if available
+// src/api/client.ts
+export class ApiClient {
+  private baseUrl: string;
+  private token: string | null = null;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/$/, '');
+  }
+
+  setToken(token: string | null): void {
+    this.token = token;
+  }
+
+  async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    const url = this.buildUrl(path);
+    const headers = new Headers(options.headers);
+
+    if (this.token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${this.token}`);
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 10000);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw await this.parseError(response);
+      }
+
+      return await response.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 }
 ```
 
-Pages catch these errors and display an `<ErrorPanel>` component instead of crashing.
+---
 
-Network timeouts (10 seconds) are handled via `AbortController` and surface as `APIError` with an abort message.
+## 3. Error Normalization Pipeline
+
+FastAPI services can return errors in multiple structural variants:
+- Plain string message: `{"detail": "Not found"}`
+- Structured error envelope: `{"error": {"message": "Unauthorized", "type": "auth_error", "path": "/ingest"}}`
+- Pydantic validation array: `{"detail": [{"loc": ["body", "dataset_id"], "msg": "field required"}]}`
+
+`ApiClient.parseError` automatically parses and normalizes these into:
+
+```typescript
+export interface APIError {
+  message: string;
+  status: number;
+  type?: string;
+  path?: string;
+  details?: unknown;
+}
+```
+
+---
+
+## 4. Binary Upload Transfer (`application/octet-stream`)
+
+File content upload bypasses multipart form encoding to stream exact raw bytes directly to the backend:
+
+```typescript
+// src/api/upload.ts
+export async function uploadFileContent(
+  uploadId: string,
+  content: Blob | ArrayBuffer
+): Promise<UploadJobSummary> {
+  return apiClient.request<UploadJobSummary>(`/upload/${uploadId}/content`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+    },
+    body: content,
+    timeoutMs: 60000, // 60s timeout for large uploads
+  });
+}
+```
+
+---
+
+## 5. Client-Side SHA-256 Checksum
+
+Before initializing an upload session, the frontend calculates the file's SHA-256 checksum using the native Web Cryptography API:
+
+```typescript
+async function computeSHA256(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const digestBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(digestBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+```
+
+This hash is sent in `POST /upload` and compared byte-for-byte on the backend when `POST /upload/{id}/content` is received.
+
+---
+
+## 6. Dynamic Target Database Capability Matrix
+
+The Control Center retrieves database engine metadata from `GET /databases`:
+
+```typescript
+export interface TargetDatabaseInfo {
+  database_key: string;
+  name: string;
+  description: string;
+  accepted_formats: string[];
+  required_role: string;
+}
+```
+
+When a user selects a file (e.g. `CSV`), the UI checks `accepted_formats.includes(fileFormat)`:
+- Compatible targets (e.g. `RelationalDB`, `TimeSeriesDB`, `LedgerDB`, `ObjectStore`) are enabled.
+- Incompatible targets (e.g. `VectorDB`) are disabled with an informative badge.
+
+---
+
+## 7. Ingestion Submission & Read-Back Verification
+
+### Ingestion Dispatch
+`POST /ingest` receives the validated parameters:
+```json
+{
+  "upload_id": "upl-613917ce2612",
+  "dataset_id": "masterdb_final_closure",
+  "package_id": "pkg-masterdb_final_closure",
+  "target_database": "RelationalDB",
+  "metadata": { "pipeline": "controlled_ingestion" }
+}
+```
+
+### Job Polling
+The UI polls `GET /ingest/jobs/{job_id}` at 1-second intervals until reaching terminal state (`PERSISTED`, `PARTIAL_PERSISTENCE`, `FAILED`, `REJECTED`).
+
+### Read-Back Verification
+Upon reaching `PERSISTED`, the frontend immediately issues:
+```
+GET /databases/RelationalDB/records/masterdb_final_closure
+```
+The returned records are rendered directly in the **Verified Persistence Proof** card, proving database persistence over HTTP.
+
+---
+
+## 8. Development Proxy vs Production URLs
+
+### Development (`vite.config.ts`)
+The Vite development server proxies API requests to `http://127.0.0.1:8000`:
+
+```typescript
+export default defineConfig({
+  server: {
+    proxy: {
+      '/health': 'http://127.0.0.1:8000',
+      '/ready': 'http://127.0.0.1:8000',
+      '/upload': 'http://127.0.0.1:8000',
+      '/ingest': 'http://127.0.0.1:8000',
+      '/databases': 'http://127.0.0.1:8000',
+      '/discovery': 'http://127.0.0.1:8000',
+      '/packages': 'http://127.0.0.1:8000',
+      '/admin': 'http://127.0.0.1:8000',
+      '/auth': 'http://127.0.0.1:8000',
+    },
+  },
+});
+```
+
+### Production Deployment
+- **Same-Origin / Reverse Proxy:** Set `VITE_MASTERDB_API_URL=""` (empty). Requests use relative paths (e.g. `/ingest`), forwarded to the backend by the reverse proxy.
+- **Cross-Origin Deployment:** Set `VITE_MASTERDB_API_URL="https://api.masterdb.internal"`. Requests use absolute URLs, requiring backend CORS configuration.
