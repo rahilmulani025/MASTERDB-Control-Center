@@ -13,8 +13,14 @@ let cachedActor = '';
  * - Caches token until 60 seconds before expiration.
  */
 export async function getAuthToken(
-  actor: string = 'bhiv-admin'
+  actor: string = 'control-center-operator',
+  password?: string | null
 ): Promise<string> {
+  const effectivePassword =
+    password !== undefined
+      ? password
+      : (import.meta.env.VITE_MASTERDB_ADMIN_PASSWORD || null);
+
   const now = Date.now();
   if (cachedToken && cachedActor === actor && tokenExpiresAt > now + 60_000) {
     return cachedToken;
@@ -25,7 +31,7 @@ export async function getAuthToken(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       actor,
-      password: null,
+      password: effectivePassword,
       roles: ['ignored'],
     }),
   });

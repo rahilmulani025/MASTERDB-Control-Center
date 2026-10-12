@@ -10,8 +10,8 @@ import type {
  * Obtain or reuse a valid signed bearer token with `bhiv-admin` role.
  * POST /auth/token
  */
-export async function getAdminToken(): Promise<string> {
-  return getAuthToken('bhiv-admin');
+export async function getAdminToken(password?: string): Promise<string> {
+  return getAuthToken('bhiv-admin', password);
 }
 
 /**
