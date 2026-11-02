@@ -16,6 +16,7 @@ import type {
   UploadInitiationResponse,
   UploadValidationResponse,
   UploadJob,
+  DatabaseRecordsResponse,
 } from '../types/masterdb';
 import { getDiscoveredPackages } from '../api/discovery';
 import { getValidationStatus } from '../api/validation';
@@ -23,6 +24,7 @@ import {
   getDatabases,
   createIngestion,
   getIngestionJob,
+  getDatabaseRecords,
 } from '../api/ingestion';
 
 import {
@@ -221,6 +223,32 @@ export function ControlledIngestion() {
   const [submitError, setSubmitError] = React.useState<{ title: string; detail: string; status?: number } | null>(null);
   const [activeJob, setActiveJob] = React.useState<IngestionJob | null>(null);
   const [isPolling, setIsPolling] = React.useState<boolean>(false);
+
+  // Target Database Read-Back State
+  const [readBackData, setReadBackData] = React.useState<DatabaseRecordsResponse | null>(null);
+  const [readBackLoading, setReadBackLoading] = React.useState<boolean>(false);
+  const [readBackError, setReadBackError] = React.useState<string | null>(null);
+
+  const handleQueryReadBack = async () => {
+    if (!activeJob || !activeJob.target_database || !activeJob.dataset_id) return;
+    setReadBackLoading(true);
+    setReadBackError(null);
+    try {
+      const res = await getDatabaseRecords(String(activeJob.target_database), activeJob.dataset_id);
+      setReadBackData(res);
+    } catch (err: unknown) {
+      const apiErr = err as APIError;
+      if (apiErr?.status === 404) {
+        setReadBackError(`Target read-back endpoint /databases/${String(activeJob.target_database)}/records/${activeJob.dataset_id} returned 404 Not Found.`);
+      } else if (apiErr?.status === 401 || apiErr?.status === 403) {
+        setReadBackError(`Authorization denied (${apiErr.status}): ${apiErr.message || 'RBAC permission required.'}`);
+      } else {
+        setReadBackError(apiErr?.message || 'Failed to query persisted records from target database.');
+      }
+    } finally {
+      setReadBackLoading(false);
+    }
+  };
 
   // ─── 6. REAL FILE UPLOAD SUBSYSTEM STATE (Phase 3) ─────────────────────────
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -1484,6 +1512,50 @@ export function ControlledIngestion() {
                     {activeJob.metadata?.records_persisted !== undefined && (
                       <div>
                         Records Persisted: <b>{activeJob.metadata.records_persisted}</b>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Target Database Read-Back Verification Card */}
+                {(activeJob.status === 'PERSISTED' || activeJob.state === 'PERSISTED') && (
+                  <div style={{ marginTop: '10px', background: 'var(--bg-secondary, #f8fafc)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>Target Database Read-Back Verification</span>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                          Direct HTTP read-back via <code>GET /databases/{String(activeJob.target_database)}/records/{activeJob.dataset_id}</code>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ fontSize: '11px', padding: '5px 12px', whiteSpace: 'nowrap' }}
+                        onClick={handleQueryReadBack}
+                        disabled={readBackLoading}
+                      >
+                        {readBackLoading ? 'Reading back records...' : 'Fetch Live Records'}
+                      </button>
+                    </div>
+
+                    {readBackError && (
+                      <div className="notice warning" style={{ margin: '8px 0 0 0', fontSize: '12px', padding: '8px 10px' }}>
+                        <b>Read-Back Notice:</b> {readBackError}
+                      </div>
+                    )}
+
+                    {readBackData && (
+                      <div style={{ marginTop: '10px', background: 'var(--bg-card, #ffffff)', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: 'var(--text-primary, #0f172a)' }}>
+                          <span>Target DB: <b>{readBackData.database_key}</b></span>
+                          <span>Dataset: <b>{readBackData.dataset_id}</b></span>
+                          <span>Verified Records: <b>{readBackData.record_count}</b></span>
+                        </div>
+                        <div style={{ maxHeight: '160px', overflowY: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '11px', whiteSpace: 'pre-wrap', color: 'var(--text-secondary, #334155)' }}>
+                            {JSON.stringify(readBackData.records, null, 2)}
+                          </pre>
+                        </div>
                       </div>
                     )}
                   </div>

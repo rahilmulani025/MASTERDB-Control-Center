@@ -1,8 +1,24 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '../layouts/AppShell';
-import { Dashboard, DatasetDetails, Datasets, Ingestion, Jobs, NotFound, Placeholder, Observability, Admin } from '../pages/Pages';
-
-const page = (name: string, table?: string[]) => <Placeholder name={name} table={table} />;
+import {
+  Dashboard,
+  DatasetDetails,
+  Datasets,
+  Ingestion,
+  Jobs,
+  NotFound,
+  Observability,
+  Admin,
+} from '../pages/Pages';
+import {
+  GovernanceOverview,
+  ValidationView,
+  CertificationView,
+  RetrievalReadinessView,
+  LineageView,
+  AuditView,
+  SharedDataAdminView,
+} from '../pages/GovernancePages';
 
 export const router = createBrowserRouter([
   {
@@ -14,18 +30,17 @@ export const router = createBrowserRouter([
       { path: 'datasets/:datasetId', element: <DatasetDetails /> },
       { path: 'ingestion', element: <Ingestion /> },
       { path: 'ingestion/jobs', element: <Jobs /> },
-      { path: 'governance', element: page('governance') },
-      { path: 'governance/validation', element: page('validation') },
-      { path: 'governance/certification', element: page('certification') },
-      { path: 'governance/retrieval', element: page('retrieval') },
-      { path: 'lineage', element: page('lineage') },
-      { path: 'audit', element: page('audit', ['Timestamp', 'Actor', 'Action', 'Object', 'Status', 'Trace ID']) },
+      { path: 'governance', element: <GovernanceOverview /> },
+      { path: 'governance/validation', element: <ValidationView /> },
+      { path: 'governance/certification', element: <CertificationView /> },
+      { path: 'governance/retrieval', element: <RetrievalReadinessView /> },
+      { path: 'lineage', element: <LineageView /> },
+      { path: 'audit', element: <AuditView /> },
       { path: 'observability', element: <Observability /> },
       { path: 'admin', element: <Admin /> },
-      { path: 'admin/shared-data', element: page('shared') },
+      { path: 'admin/shared-data', element: <SharedDataAdminView /> },
       { path: 'admin/system', element: <Admin /> },
       { path: '*', element: <NotFound /> },
     ],
   },
 ]);
-

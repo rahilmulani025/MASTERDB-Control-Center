@@ -19,10 +19,13 @@ All routes are nested within the root layout `<AppShell>`, which provides the pe
 | `/observability` | `Observability` | Read-Only | `GET /health`, `GET /ready`, `GET /metrics`, `GET /runtime/identity`, `GET /replay-registry/manifest` |
 | `/admin` | `Admin` | Read + Controlled Mutation | `POST /auth/token`, `GET /admin/configuration`, `GET /admin/backup`, `POST /admin/restore` |
 | `/admin/system` | `Admin` | Read + Controlled Mutation | Same as `/admin` |
-| `/admin/shared-data` | `Placeholder` | Read-Only | `GET /shared/registry`, `GET /shared/contracts` |
-| `/governance` | `Placeholder` | Read-Only | Navigation root placeholder |
-| `/lineage` | `Placeholder` | Read-Only | Navigation root placeholder |
-| `/audit` | `Placeholder` | Read-Only | Navigation root placeholder |
+| `/admin/shared-data` | `SharedDataAdminView` | Read-Only | `GET /shared/registry`, `GET /shared/contracts` |
+| `/governance` | `GovernanceOverview` | Read-Only | `GET /discovery/packages` |
+| `/governance/validation` | `ValidationView` | Read + Controlled Mutation | `GET /discovery/packages`, `GET /status/{id}`, `GET /report/{id}`, `POST /validate` |
+| `/governance/certification` | `CertificationView` | Read + Controlled Mutation | `GET /discovery/packages`, `GET /status/{id}`, `GET /tantra/certification/{id}`, `POST /certify` |
+| `/lineage` | `LineageView` | Read-Only | `GET /discovery/packages`, `GET /packages/{id}/lineage`, `GET /mdu/provenance/{id}` |
+| `/governance/retrieval` | `RetrievalReadinessView` | Read-Only | `GET /discovery/packages`, `GET /packages/{id}/retrieval`, `GET /tantra/packages/{id}/retrieval-readiness` |
+| `/audit` | `AuditView` | Read-Only | `GET /discovery/packages`, `GET /packages/{id}/audit`, `GET /packages/{id}/replay` |
 | `*` | `NotFound` | Read-Only | None (404 Fallback) |
 
 ---
@@ -130,6 +133,56 @@ All routes are nested within the root layout `<AppShell>`, which provides the pe
 
 ---
 
+### `/governance`
+- **Component:** `GovernanceOverview`
+- **Purpose:** Sovereign dataset governance control plane. Displays progression diagram and searchable inventory of registered packages with 1-click links to validation, certification, and lineage views.
+- **APIs:** `GET /discovery/packages`
+
+---
+
+### `/governance/validation`
+- **Component:** `ValidationView`
+- **Purpose:** On-demand deterministic validation execution and profile inspection.
+- **APIs:** `GET /discovery/packages`, `GET /status/{id}`, `GET /report/{id}`, `POST /validate`
+
+---
+
+### `/governance/certification`
+- **Component:** `CertificationView`
+- **Purpose:** Formal certification authority interface with dual MASTERDB and TANTRA runtime status indicators.
+- **APIs:** `GET /discovery/packages`, `GET /status/{id}`, `GET /tantra/certification/{id}`, `POST /certify`
+
+---
+
+### `/lineage`
+- **Component:** `LineageView`
+- **Purpose:** Ancestor/descendant dependency walk and canonical MDU provenance audit trail.
+- **APIs:** `GET /discovery/packages`, `GET /packages/{id}/lineage`, `GET /mdu/provenance/{id}`
+
+---
+
+### `/governance/retrieval`
+- **Component:** `RetrievalReadinessView`
+- **Purpose:** Detailed retrieval readiness rules evaluation, schema compliance, and corrective action list.
+- **APIs:** `GET /discovery/packages`, `GET /packages/{id}/retrieval`, `GET /tantra/packages/{id}/retrieval-readiness`
+
+---
+
+### `/audit`
+- **Component:** `AuditView`
+- **Purpose:** Audit completeness verification and deterministic replay consistency evaluation against transition history.
+- **APIs:** `GET /discovery/packages`, `GET /packages/{id}/audit`, `GET /packages/{id}/replay`
+
+---
+
+### `/admin/shared-data`
+- **Component:** `SharedDataAdminView`
+- **Purpose:** Ecosystem shared data registry and service convergence contracts viewer.
+- **APIs:** `GET /shared/registry`, `GET /shared/contracts`
+
+---
+
 ### `*` (Catch-All)
 - **Component:** `NotFound`
 - **Purpose:** Graceful fallback for non-existent routes with navigation link back to `/dashboard`.
+

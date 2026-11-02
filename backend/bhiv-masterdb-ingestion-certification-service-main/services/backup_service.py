@@ -71,7 +71,12 @@ def restore_snapshot(snapshot: Dict[str, Any], stores: Dict[str, Optional[Any]])
     field name.
     """
     restored_counts: Dict[str, int] = {}
-    for label, store_snapshot in snapshot.get("stores", {}).items():
+    stores_data = snapshot.get("stores", {}) if isinstance(snapshot, dict) else None
+    if not isinstance(stores_data, dict):
+        raise BackupError("Snapshot 'stores' field must be a dictionary.")
+    for label, store_snapshot in stores_data.items():
+        if not isinstance(store_snapshot, dict):
+            raise BackupError(f"Snapshot store entry '{label}' must be a dictionary.")
         if not store_snapshot.get("persisted"):
             restored_counts[label] = 0
             continue

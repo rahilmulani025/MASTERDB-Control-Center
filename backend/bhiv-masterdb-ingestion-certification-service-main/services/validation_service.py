@@ -19,6 +19,19 @@ from validators.provenance_validator import ProvenanceValidator
 from validators.schema_validator import SchemaValidator
 
 
+_BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _resolve_config_path(path_str: str) -> str:
+    p = Path(path_str)
+    if p.is_file():
+        return str(p)
+    alt = _BASE_DIR / path_str
+    if alt.is_file():
+        return str(alt)
+    return path_str
+
+
 class ValidationService:
     def __init__(
         self,
@@ -26,8 +39,8 @@ class ValidationService:
         rules_path: str = "config/validation_rules.json",
         artifact_store: Optional[ArtifactStore] = None,
     ) -> None:
-        self.schema_path = schema_path
-        self.rules_path = rules_path
+        self.schema_path = _resolve_config_path(schema_path)
+        self.rules_path = _resolve_config_path(rules_path)
         self.artifact_store = artifact_store or ArtifactStore()
 
     def validate(

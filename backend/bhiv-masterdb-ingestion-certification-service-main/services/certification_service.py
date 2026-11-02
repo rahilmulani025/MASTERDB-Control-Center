@@ -1,8 +1,21 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from models import CertificationState, IngestionDecision, TransitionRecord
 from services.artifact_store import ArtifactStore
 from services.validation_service import ValidationService
+
+_BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _resolve_config_path(path_str: str) -> str:
+    p = Path(path_str)
+    if p.is_file():
+        return str(p)
+    alt = _BASE_DIR / path_str
+    if alt.is_file():
+        return str(alt)
+    return path_str
 
 
 class CertificationService:
@@ -16,7 +29,7 @@ class CertificationService:
         self.validation_service = validation_service or ValidationService(
             artifact_store=self.artifact_store
         )
-        self.rules_path = rules_path
+        self.rules_path = _resolve_config_path(rules_path)
 
     def certify(
         self,

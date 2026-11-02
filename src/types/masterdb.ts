@@ -702,3 +702,25 @@ export interface UploadCancelResponse {
   rejection_reason?: string | null;
 }
 
+// ─────────────────────────────────────────────────────────────
+// TARGET DATABASE READ-BACK TYPES
+// ─────────────────────────────────────────────────────────────
+
+export interface DatabaseRecordItem {
+  id?: string;
+  dataset?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface DatabaseRecordsResponse {
+  database_key: string;
+  dataset_id: string;
+  record_count: number;
+  limit?: number;
+  offset?: number;
+  records: DatabaseRecordItem[] | Record<string, unknown>[];
+  [key: string]: unknown;
+}
+
+

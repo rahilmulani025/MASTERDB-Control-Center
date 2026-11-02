@@ -26,14 +26,20 @@ const navGroups: NavGroup[] = [
   {
     title: 'DATASET GOVERNANCE',
     items: [
-      { label: 'Governance Guide', path: '/governance' },
+      { label: 'Governance Overview', path: '/governance', end: true },
+      { label: 'Validation', path: '/governance/validation' },
+      { label: 'Certification', path: '/governance/certification' },
+      { label: 'Lineage & Provenance', path: '/lineage' },
+      { label: 'Retrieval Readiness', path: '/governance/retrieval' },
+      { label: 'Audit & Replay', path: '/audit' },
     ],
   },
   {
     title: 'SYSTEM OPERATIONS',
     items: [
+      { label: 'Controlled Ingestion', path: '/ingestion', end: true },
+      { label: 'Ingestion Jobs', path: '/ingestion/jobs' },
       { label: 'Shared Data', path: '/admin/shared-data' },
-      { label: 'Ingestion', path: '/ingestion' },
     ],
   },
 ];
@@ -76,7 +82,18 @@ export function AppShell() {
       breadcrumbs.push({ label: 'System & Administration' });
     }
   } else if (pathSegments[0] === 'governance') {
-    breadcrumbs.push({ label: 'Governance Guide' });
+    breadcrumbs.push({ label: 'Governance', path: pathSegments.length > 1 ? '/governance' : undefined });
+    if (pathSegments[1] === 'validation') {
+      breadcrumbs.push({ label: 'Validation' });
+    } else if (pathSegments[1] === 'certification') {
+      breadcrumbs.push({ label: 'Certification' });
+    } else if (pathSegments[1] === 'retrieval') {
+      breadcrumbs.push({ label: 'Retrieval Readiness' });
+    }
+  } else if (pathSegments[0] === 'lineage') {
+    breadcrumbs.push({ label: 'Lineage & Provenance' });
+  } else if (pathSegments[0] === 'audit') {
+    breadcrumbs.push({ label: 'Audit & Replay' });
   } else if (pathSegments[0] === 'ingestion') {
     breadcrumbs.push({ label: 'Controlled Ingestion', path: pathSegments.length > 1 ? '/ingestion' : undefined });
     if (pathSegments.length > 1 && pathSegments[1] === 'jobs') {
@@ -134,7 +151,7 @@ export function AppShell() {
 
       <main>
         <header className="topbar">
-          <div className="breadcrumbs">
+          <nav aria-label="Breadcrumbs" className="breadcrumbs">
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={idx}>
                 {idx > 0 && <span className="breadcrumb-sep">/</span>}
@@ -147,7 +164,7 @@ export function AppShell() {
                 )}
               </React.Fragment>
             ))}
-          </div>
+          </nav>
 
           <div className="topbar-right">
             <span className={`pill-badge ${connected ? 'connected' : 'disconnected'}`}>

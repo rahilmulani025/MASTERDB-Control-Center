@@ -107,48 +107,64 @@ export function SearchInput({
   );
 }
 
+export interface DataTableProps {
+  columns?: string[];
+  headers?: string[];
+  rows?: Array<Record<string, unknown>> | Array<Array<React.ReactNode>>;
+  empty?: string;
+}
+
 export function DataTable({
   columns,
+  headers,
   rows,
-  empty,
-}: {
-  columns: string[];
-  rows?: Array<Record<string, unknown>>;
-  empty: string;
-}) {
+  empty = 'No data available',
+}: DataTableProps) {
+  const colList = columns ?? headers ?? [];
   return (
     <div className="table-wrap">
       <table>
         <thead>
           <tr>
-            {columns.map((c) => (
-              <th key={c}>{c}</th>
+            {colList.map((c, idx) => (
+              <th key={c || idx}>{c}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows && rows.length > 0 ? (
-            rows.map((row, i) => (
-              <tr key={i}>
-                {columns.map((col) => {
-                  const val = String(row[col] ?? '');
-                  const isTechnical =
-                    col.includes('ID') ||
-                    col.includes('Hash') ||
-                    col.includes('Version') ||
-                    col.includes('Ref') ||
-                    col.includes('Path');
-                  return (
-                    <td key={col} className={isTechnical && val !== '-' ? 'code-val' : undefined}>
-                      {val}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
+            rows.map((row, i) => {
+              if (Array.isArray(row)) {
+                return (
+                  <tr key={i}>
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx}>{cell}</td>
+                    ))}
+                  </tr>
+                );
+              }
+              return (
+                <tr key={i}>
+                  {colList.map((col) => {
+                    const val = String((row as Record<string, unknown>)[col] ?? '');
+                    const isTechnical =
+                      col.includes('ID') ||
+                      col.includes('Hash') ||
+                      col.includes('Version') ||
+                      col.includes('Ref') ||
+                      col.includes('Path');
+                    return (
+                      <td key={col} className={isTechnical && val !== '-' ? 'code-val' : undefined}>
+                        {val}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })
           ) : (
             <tr>
-              <td colSpan={columns.length} className="table-empty">
+              <td colSpan={colList.length || 1} className="table-empty">
                 {empty}
               </td>
             </tr>

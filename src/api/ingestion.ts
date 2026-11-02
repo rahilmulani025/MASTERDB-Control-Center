@@ -6,6 +6,7 @@ import type {
   IngestionRequest,
   IngestionJob,
   IngestionJobsResponse,
+  DatabaseRecordsResponse,
 } from '../types/masterdb';
 
 /**
@@ -95,3 +96,32 @@ export async function getIngestionJobs(): Promise<IngestionJob[]> {
   }
   return [];
 }
+
+/**
+ * GET /databases/{database_key}/records/{dataset_id}
+ * Retrieves live persisted records directly from the sovereign target database store.
+ * Supports limit and offset pagination.
+ */
+export async function getDatabaseRecords(
+  databaseKey: string,
+  datasetId: string,
+  limit?: number,
+  offset?: number,
+): Promise<DatabaseRecordsResponse> {
+  const token = await getAuthToken();
+  const queryParams = new URLSearchParams();
+  if (limit !== undefined && limit !== null) {
+    queryParams.set('limit', String(limit));
+  }
+  if (offset !== undefined && offset !== null) {
+    queryParams.set('offset', String(offset));
+  }
+  const queryString = queryParams.toString();
+  const path = `/databases/${encodeURIComponent(databaseKey)}/records/${encodeURIComponent(datasetId)}${queryString ? `?${queryString}` : ''}`;
+  return apiClient.request<DatabaseRecordsResponse>(path, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
