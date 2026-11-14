@@ -64,4 +64,33 @@ describe('Navigation & AppShell Component Tests', () => {
       expect(screen.getAllByText(/Connected/i).length).toBeGreaterThanOrEqual(1);
     });
   });
+
+  it('renders breadcrumbs dynamically for governance, lineage, audit, and datasets routes', async () => {
+    vi.spyOn(healthApi, 'getHealth').mockResolvedValue({ status: 'ok' });
+
+    const testRoutes = [
+      { route: '/governance/validation', expected: ['Governance', 'Validation'] },
+      { route: '/governance/certification', expected: ['Governance', 'Certification'] },
+      { route: '/governance/retrieval', expected: ['Governance', 'Retrieval Readiness'] },
+      { route: '/lineage', expected: ['Lineage & Provenance'] },
+      { route: '/audit', expected: ['Audit & Replay'] },
+      { route: '/admin/shared-data', expected: ['Shared Data Registry'] },
+      { route: '/observability', expected: ['Observability Telemetry'] },
+      { route: '/datasets/pkg-alpha', expected: ['Dataset Explorer', 'pkg-alpha'] },
+    ];
+
+    for (const { route, expected } of testRoutes) {
+      const { unmount } = render(
+        <MemoryRouter initialEntries={[route]}>
+          <AppShell />
+        </MemoryRouter>
+      );
+
+      const breadcrumbsNav = screen.getByLabelText('Breadcrumbs');
+      for (const text of expected) {
+        expect(breadcrumbsNav).toHaveTextContent(text);
+      }
+      unmount();
+    }
+  });
 });

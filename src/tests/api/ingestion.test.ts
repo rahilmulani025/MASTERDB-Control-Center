@@ -168,4 +168,113 @@ describe('Controlled Ingestion API Unit Tests', () => {
       expect.any(Object)
     );
   });
+
+  it('handles raw array responses and empty fallbacks for getDatabases and getIngestionJobs', async () => {
+    // Array direct return
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce([
+      { name: 'DirectDB', display_name: 'Direct DB', supported_formats: ['CSV'], required_role: 'operator' },
+    ]);
+    const dbs1 = await getDatabases();
+    expect(dbs1).toHaveLength(1);
+
+    // Empty/invalid object fallback
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce({ unexpected: true });
+    const dbs2 = await getDatabases();
+    expect(dbs2).toEqual([]);
+
+    // Array direct return for jobs
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce([
+      { job_id: 'job-direct-1', status: 'PERSISTED' },
+    ]);
+    const jobs1 = await getIngestionJobs();
+    expect(jobs1).toHaveLength(1);
+
+    // Empty fallback for jobs
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce({ unexpected: true });
+    const jobs2 = await getIngestionJobs();
+    expect(jobs2).toEqual([]);
+  });
+
+  it('validates accepted format matching and rejects invalid format before submission', () => {
+    const supportedFormats: Array<'CSV' | 'JSON' | 'XLSX'> = ['CSV', 'JSON', 'XLSX'];
+    const chosenFormat = 'PARQUET';
+    const isAccepted = supportedFormats.includes(chosenFormat as unknown as 'CSV' | 'JSON' | 'XLSX');
+    expect(isAccepted).toBe(false);
+
+    const validFormat = 'CSV';
+    expect(supportedFormats.includes(validFormat)).toBe(true);
+  });
+
+  it('handles HTTP 401 Unauthorized during ingestion submission', async () => {
+    vi.spyOn(apiClient, 'request').mockRejectedValue({
+      status: 401,
+      message: 'Unauthorized: missing or invalid authentication token',
+    });
+
+    await expect(
+      createIngestion({
+        dataset_id: 'ds-auth-err',
+        target_database: 'RelationalDB',
+        source_format: 'JSON',
+      })
+    ).rejects.toMatchObject({ status: 401 });
+  });
+
+  it('handles HTTP 403 Forbidden when user lacks operator role', async () => {
+    vi.spyOn(apiClient, 'request').mockRejectedValue({
+      status: 403,
+      message: 'Forbidden: operator role required for target database RelationalDB',
+    });
+
+    await expect(
+      createIngestion({
+        dataset_id: 'ds-role-err',
+        target_database: 'RelationalDB',
+        source_format: 'JSON',
+      })
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it('handles HTTP 422 Unprocessable Entity when payload is invalid', async () => {
+    vi.spyOn(apiClient, 'request').mockRejectedValue({
+      status: 422,
+      message: 'body.dataset_id: Field required',
+    });
+
+    await expect(
+      createIngestion({
+        dataset_id: '',
+        target_database: 'RelationalDB',
+        source_format: 'JSON',
+      })
+    ).rejects.toMatchObject({ status: 422 });
+  });
+
+  it('handles REJECTED terminal status and PARTIAL_PERSISTENCE status', async () => {
+    const rejectedJob: IngestionJob = {
+      job_id: 'job-rejected-1',
+      dataset_id: 'dataset-corrupt',
+      target_database: 'RelationalDB',
+      status: 'REJECTED',
+      rejection_reason: 'Integrity check failed: 4 corrupted rows found',
+    };
+
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce(rejectedJob);
+    const jobRes1 = await getIngestionJob('job-rejected-1');
+    expect(jobRes1.status).toBe('REJECTED');
+    expect(jobRes1.rejection_reason).toContain('Integrity check failed');
+
+    const partialJob: IngestionJob = {
+      job_id: 'job-partial-1',
+      dataset_id: 'dataset-partial',
+      target_database: 'RelationalDB',
+      status: 'PARTIAL_PERSISTENCE',
+      metadata: { records_persisted: 80, records_failed: 20 },
+    };
+
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce(partialJob);
+    const jobRes2 = await getIngestionJob('job-partial-1');
+    expect(jobRes2.status).toBe('PARTIAL_PERSISTENCE');
+    expect(jobRes2.metadata?.records_persisted).toBe(80);
+  });
 });

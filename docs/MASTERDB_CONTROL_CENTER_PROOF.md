@@ -183,7 +183,7 @@ dist/assets/index-D7g239x8.js   182.94 kB │ gzip: 49.88 kB
 ## 10. Architectural Topology & Parikshak Notes
 
 - **Hybrid Repository Structure:** This repository combines the React/Vite Control Center at root with the FastAPI backend under `backend/bhiv-masterdb-ingestion-certification-service-main`.
-- **Backend Service Scope:** Bundled Python code provides validation, certification, package registry, MDU contract adapters, TANTRA runtime, and shared record storage (272 passed unit tests). Upload, async job execution, and database persistence routing are part of the cloud deployment (`bhiv-masterdb-ingestion-certification.onrender.com`), while the frontend client is tested against mock and fixture suites.
+- **Backend Service Scope:** Bundled Python code provides validation, certification, package registry, MDU contract adapters, TANTRA runtime, and shared record storage (274 passed unit tests). Upload, async job execution, and database persistence routing are part of the cloud deployment (`bhiv-masterdb-ingestion-certification.onrender.com`), while the frontend client is tested against mock and fixture suites.
 - **Reproducibility Guarantee:** All dependencies in `package.json` and `requirements.txt` are pinned with exact semantic versions.
 
 ---

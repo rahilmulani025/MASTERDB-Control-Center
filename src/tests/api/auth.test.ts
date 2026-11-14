@@ -115,4 +115,22 @@ describe('Auth Service Unit Tests', () => {
       message: 'Invalid credentials or inactive actor',
     });
   });
+
+  it('handles response without actor field defaulting to requested actor', async () => {
+    const futureExpiry = new Date(Date.now() + 3600 * 1000).toISOString();
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      access_token: 'valid-token-no-actor',
+      token_type: 'bearer',
+      expires_at: futureExpiry,
+    });
+
+    const token = await getAuthToken('default-actor-test');
+    expect(token).toBe('valid-token-no-actor');
+  });
+
+  it('rejects with error when token is missing or network disconnects', async () => {
+    vi.spyOn(apiClient, 'request').mockRejectedValue(new Error('Network error: failed to reach auth service'));
+
+    await expect(getAuthToken('operator')).rejects.toThrow('Network error: failed to reach auth service');
+  });
 });

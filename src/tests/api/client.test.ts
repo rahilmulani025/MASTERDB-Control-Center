@@ -176,6 +176,83 @@ describe('ApiClient Unit Tests', () => {
     expect(caught?.message).toContain('aborted');
   });
 
+  it('normalizes response with message property in error JSON', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: async () => JSON.stringify({ message: 'Custom bad request message' }),
+    });
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/test');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toBe('Custom bad request message');
+    expect(caught?.status).toBe(400);
+  });
+
+  it('normalizes response with rejection_reason property in error JSON', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: async () => JSON.stringify({ rejection_reason: 'Dataset schema mismatch' }),
+    });
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/test');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toBe('Dataset schema mismatch');
+    expect(caught?.status).toBe(422);
+  });
+
+  it('normalizes non-JSON text error responses with fallback', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 502,
+      headers: new Headers({ 'content-type': 'text/plain' }),
+      text: async () => 'Bad Gateway upstream error',
+    });
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/test');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toBe('Bad Gateway upstream error');
+    expect(caught?.status).toBe(502);
+  });
+
+  it('handles empty non-JSON response body returning null', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/plain' }),
+      text: async () => '',
+    });
+
+    const res = await client.request('/empty-endpoint');
+    expect(res).toBeNull();
+  });
+
+  it('handles non-Error thrown during fetch', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue('Primitive string error');
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/crash');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toBe('Primitive string error');
+  });
+
   it('injects headers and custom request method properly', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

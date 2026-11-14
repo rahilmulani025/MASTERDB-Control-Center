@@ -121,3 +121,51 @@ def test_package_status_and_report_unknown_ids_return_404(client):
 
     r3 = client.get("/packages/completely_unknown_pkg_xyz")
     assert r3.status_code == 404
+
+
+def test_malformed_json_and_invalid_content_types(client):
+    """Assert broken JSON syntax and wrong content types are rejected with 4xx without 500."""
+    # 1. Broken JSON syntax in POST /validate
+    r1 = client.post(
+        "/validate",
+        content="{\"broken\": json syntax here...",
+        headers={"Content-Type": "application/json"},
+    )
+    assert r1.status_code in [400, 422]
+    assert r1.status_code != 500
+
+    # 2. Broken JSON syntax in POST /certify
+    r2 = client.post(
+        "/certify",
+        content="not-json-at-all",
+        headers={"Content-Type": "application/json"},
+    )
+    assert r2.status_code in [400, 422]
+    assert r2.status_code != 500
+
+    # 3. Broken JSON syntax in POST /auth/token
+    r3 = client.post(
+        "/auth/token",
+        content="<<<invalid xml instead of json>>>",
+        headers={"Content-Type": "application/json"},
+    )
+    assert r3.status_code in [400, 422]
+    assert r3.status_code != 500
+
+
+def test_invalid_identifiers_and_path_boundaries(client):
+    """Assert empty or malformed path parameters return 404 or 422 without 500 crashes."""
+    # 1. Missing path segment
+    r1 = client.get("/packages//lineage")
+    assert r1.status_code in [404, 307]
+
+    # 2. Non-existent path on TANTRA retrieval readiness
+    r2 = client.get("/tantra/packages/non_existent_pkg_000/retrieval-readiness")
+    assert r2.status_code in [400, 404]
+    assert r2.status_code != 500
+
+    # 3. Non-existent canonical doc version
+    r3 = client.get("/canonical-repository/documents/non_existent_doc/versions/999", headers=_admin_headers())
+    assert r3.status_code in [400, 404]
+    assert r3.status_code != 500
+

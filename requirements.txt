@@ -1,12 +1,15 @@
 # MASTERDB Sovereign Core & Control Center Root Python Dependencies
 # Authoritative pinned versions aligned with T-GOV-F01 task baseline and verified backend environment
-fastapi==0.115.12
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.13.3
+pydantic-core==2.46.3
+requests==2.34.2
+python-dotenv==1.2.2
+cryptography==49.0.0
+pytest==9.0.3
+pytest-asyncio==0.24.0
 starlette==0.46.2
-uvicorn[standard]==0.34.2
-pydantic==2.13.5
-pydantic-core==2.46.5
-python-dotenv==1.2.3
-pytest==9.1.1
 httpx==0.28.1
 pandas==3.0.3
 numpy==2.4.6

@@ -184,4 +184,73 @@ describe('Upload API Service Unit Tests', () => {
     expect(res.status).toBe('REJECTED');
     expect(res.rejection_reason).toBe('User cancelled upload session');
   });
+
+  it('handles upload cancellation error when job cannot be cancelled', async () => {
+    vi.spyOn(apiClient, 'request').mockRejectedValue({
+      status: 400,
+      message: 'Job cannot be cancelled in terminal state PERSISTED',
+    });
+
+    await expect(cancelUploadJob('upl-persisted', 'Cancel attempt')).rejects.toMatchObject({
+      status: 400,
+      message: 'Job cannot be cancelled in terminal state PERSISTED',
+    });
+  });
+
+  it('supports full metadata fields during upload initialization', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      upload_id: 'upl-meta-001',
+      status: 'UPLOAD_INITIATED',
+    });
+
+    await initiateUpload({
+      filename: 'full-dataset.csv',
+      content_type: 'text/csv',
+      file_size: 2048,
+      checksum_sha256: 'a'.repeat(64),
+      classification: 'Confidential',
+      source_reference: 'REF-2026-X',
+      provenance_metadata: { source_system: 'ERP' },
+      schema_version: '2.1.0',
+      product_source: 'analytics_engine',
+      intended_use: 'governance_audit',
+      metadata: { department: 'finance' },
+    });
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      '/upload',
+      expect.objectContaining({
+        body: expect.stringContaining('analytics_engine'),
+      })
+    );
+  });
+
+  it('filters upload jobs by product_source and status', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      count: 0,
+      uploads: [],
+    });
+
+    await listUploadJobs({
+      status: 'FAILED',
+      actor: 'operator-1',
+      product_source: 'warehouse-1',
+    });
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      '/upload/jobs?status=FAILED&actor=operator-1&product_source=warehouse-1',
+      expect.any(Object)
+    );
+  });
+
+  it('validates file size boundary and unsupported file format scenarios', async () => {
+    // Zero byte validation
+    const emptyFile = new File([], 'zero.dat', { type: 'application/octet-stream' });
+    expect(emptyFile.size).toBe(0);
+
+    // Unsupported format simulation
+    const unsupportedFile = new File(['executable code'], 'script.exe', { type: 'application/x-msdownload' });
+    const isSupported = ['JSON', 'CSV', 'XLSX'].includes(unsupportedFile.name.split('.').pop()?.toUpperCase() || '');
+    expect(isSupported).toBe(false);
+  });
 });

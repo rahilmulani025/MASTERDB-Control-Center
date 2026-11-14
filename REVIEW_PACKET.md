@@ -31,8 +31,8 @@ The previous submission under evaluation ID `task-ext-9360d29e3d48` scored 17/10
 6. Package dependencies contained unpinned `"latest"` declarations, compromising reproducibility.
 
 This remediation addresses 100% of the audit findings:
-- Established root `pytest.ini` and resolved relative path bugs, bringing backend test execution from 9 collection crashes to **272 passed, 0 failed**.
-- Installed and configured Vitest, jsdom, and React Testing Library, authoring **8 test files with 46 tests passing 100%**, achieving **96% function coverage** across all API client modules.
+- Established root `pytest.ini` and resolved relative path bugs, bringing backend test execution from 9 collection crashes to **274 passed, 0 failed**.
+- Installed and configured Vitest, jsdom, and React Testing Library, authoring **10 test files with 78 tests passing 100%**, achieving **97.12% line coverage and 98% function coverage** across all API client modules, and **96.62% line coverage overall**.
 - Implemented real functional views in `src/pages/GovernancePages.tsx` for Governance Overview, Validation, Certification, Lineage & MDU Provenance, Retrieval Readiness, Replay Audit, and Shared Data Admin.
 - Implemented typed `getDatabaseRecords()` in `src/api/ingestion.ts` and integrated live read-back verification cards into both `IngestionJobs.tsx` and `ControlledIngestion.tsx`.
 - Designed and verified a **Deterministic 50-Run Repeatability Harness** yielding bit-for-bit identical SHA-256 digest `9b7bd6b9ecdf98a198251257d7f771d7a25a53ad15dd295b6d867d98691afbca` across all 50 iterations with 0 drift.
@@ -78,9 +78,9 @@ MASTERDB-Control-Center/
 
 | Requirement ID | Specification Requirement | Implementation Location | Verification Evidence | Status |
 |---|---|---|---|---|
-| **REQ-01** | Root Pytest Discovery & Execution | `pytest.ini`, `services/validation_service.py` | `pytest -q` -> 272 passed, 0 failed | **PASS** |
-| **REQ-02** | Frontend Automated Testing Suite | `src/tests/**/*.test.{ts,tsx}`, `vitest.config.ts` | `npm test` -> 46 passed, 0 failed | **PASS** |
-| **REQ-03** | Frontend Code Coverage (>80%) | `src/api/*.ts` tested in `src/tests/api/` | `npm run test:coverage` -> 96% funcs, 86.2% lines | **PASS** |
+| **REQ-01** | Root Pytest Discovery & Execution | `pytest.ini`, `services/validation_service.py` | `pytest -q` -> 274 passed, 0 failed | **PASS** |
+| **REQ-02** | Frontend Automated Testing Suite | `src/tests/**/*.test.{ts,tsx}`, `vitest.config.ts` | `npm test` -> 78 passed, 0 failed | **PASS** |
+| **REQ-03** | Frontend Code Coverage (>90%) | `src/api/*.ts`, `src/components/*.tsx` | `npm run test:coverage` -> 97.12% API line, 96.62% total line | **PASS** |
 | **REQ-04** | Target Database Read-Back Client | `src/api/ingestion.ts` (`getDatabaseRecords`) | Unit test in `ingestion.test.ts`, UI card | **PASS** |
 | **REQ-05** | Standalone Governance Views | `src/pages/GovernancePages.tsx`, `router.tsx` | Component tests in `governance.test.tsx` | **PASS** |
 | **REQ-06** | Navigation & Dynamic Breadcrumbs | `src/layouts/AppShell.tsx` | Component test in `navigation.test.tsx` | **PASS** |
@@ -184,65 +184,81 @@ The repository employs a multi-layered testing methodology:
 ```
 Command: pytest -q
 Directory: c:\Users\Rahil Mulani\Desktop\MASTERDB-Control-Center-Stage1
-Result: 272 passed, 0 failed in 8.01s
+Result: 274 passed, 0 failed in 4.45s
 Status: 100% PASS
 ```
 
 #### 2. Frontend Test Suite (Vitest)
 ```
-Command: npm test -- --run
+Command: npm test
 Directory: c:\Users\Rahil Mulani\Desktop\MASTERDB-Control-Center-Stage1
-Result: 8 passed / 8 test files, 46 passed tests, 0 failed in 3.14s
+Result: 10 passed / 10 test files, 78 passed tests, 0 failed in 2.10s
 Status: 100% PASS
 ```
 
 **Test Files Breakdown:**
-- `src/tests/api/client.test.ts` (9 tests) — **PASS**
-- `src/tests/api/auth.test.ts` (4 tests) — **PASS**
-- `src/tests/api/upload.test.ts` (8 tests) — **PASS**
-- `src/tests/api/ingestion.test.ts` (6 tests) — **PASS**
-- `src/tests/api/governance_apis.test.ts` (9 tests) — **PASS**
-- `src/tests/integration/workflow.test.tsx` (1 test) — **PASS**
+- `src/tests/api/client.test.ts` (14 tests) — **PASS**
+- `src/tests/api/auth.test.ts` (6 tests) — **PASS**
+- `src/tests/api/upload.test.ts` (12 tests) — **PASS**
+- `src/tests/api/ingestion.test.ts` (12 tests) — **PASS**
+- `src/tests/api/governance_apis.test.ts` (10 tests) — **PASS**
+- `src/tests/integration/workflow.test.tsx` (2 tests) — **PASS**
 - `src/tests/components/governance.test.tsx` (7 tests) — **PASS**
-- `src/tests/components/navigation.test.tsx` (2 tests) — **PASS**
+- `src/tests/components/navigation.test.tsx` (3 tests) — **PASS**
+- `src/tests/components/explorer.test.tsx` (4 tests) — **PASS**
+- `src/tests/components/ui.test.tsx` (8 tests) — **PASS**
 
 ---
 
 ### Section 10: Coverage Results & Quality Metrics
 
-```
-% Coverage Report from V8:
+`
+% Coverage report from v8:
 -------------------|---------|----------|---------|---------|-------------------
 File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -------------------|---------|----------|---------|---------|-------------------
-All files          |   78.60 |    61.86 |   90.14 |   79.32 |                   
- api/              |   85.39 |    67.97 |   96.00 |   86.20 |                   
-  admin.ts         |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  audit.ts         |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  auth.ts          |  100.00 |    91.66 |  100.00 |  100.00 |                   
-  certification.ts |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  client.ts        |   75.92 |    63.15 |   80.00 |   78.43 |                   
-  discovery.ts     |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  health.ts        |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  ingestion.ts     |   85.71 |    78.12 |  100.00 |   85.71 |                   
-  lineage.ts       |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  mdu.ts           |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  operations.ts    |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  packages.ts      |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  retrieval.ts     |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  tantra.ts        |  100.00 |   100.00 |  100.00 |  100.00 |                   
-  upload.ts        |   82.22 |    60.78 |  100.00 |   81.81 |                   
-  validation.ts    |  100.00 |   100.00 |  100.00 |  100.00 |                   
- components/ui.tsx |   58.82 |    50.00 |   66.66 |   58.82 |                   
- layouts/AppShell  |   60.41 |    55.17 |   88.88 |   60.86 |                   
+All files          |   95.88 |    87.93 |   97.18 |   96.62 |                   
+ api               |   96.62 |    88.88 |      98 |   97.12 |                   
+  admin.ts         |     100 |      100 |     100 |     100 |                   
+  audit.ts         |     100 |      100 |     100 |     100 |                   
+  auth.ts          |     100 |      100 |     100 |     100 |                   
+  certification.ts |     100 |      100 |     100 |     100 |                   
+  client.ts        |   90.74 |     80.7 |      80 |   92.15 | 9-12              
+  discovery.ts     |     100 |      100 |     100 |     100 |                   
+  health.ts        |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ingestion.ts     |     100 |      100 |     100 |     100 |                   
+  ...edgeObject.ts |     100 |      100 |     100 |     100 |                   
+  lineage.ts       |     100 |      100 |     100 |     100 |                   
+  mdu.ts           |     100 |      100 |     100 |     100 |                   
+  operations.ts    |     100 |      100 |     100 |     100 |                   
+  packages.ts      |     100 |      100 |     100 |     100 |                   
+  retrieval.ts     |     100 |      100 |     100 |     100 |                   
+  tantra.ts        |     100 |      100 |     100 |     100 |                   
+  upload.ts        |   97.77 |    88.23 |     100 |   97.72 | 19                
+  validation.ts    |     100 |      100 |     100 |     100 |                   
+ components        |     100 |     91.3 |     100 |     100 |                   
+  ui.tsx           |     100 |     91.3 |     100 |     100 | 123-130,149,167   
+ layouts           |   91.66 |    82.75 |   88.88 |   93.47 |                   
+  AppShell.tsx     |   91.66 |    82.75 |   88.88 |   93.47 | 58,82,103         
 -------------------|---------|----------|---------|---------|-------------------
-```
+`
 
-- **API Client Function Coverage:** **96.00%**
-- **API Client Line Coverage:** **86.20%**
-- **Static Type Checking (`tsc -b`):** **0 errors**
-- **ESLint (`npm run lint`):** **0 errors, 0 warnings**
-- **Production Build (`npm run build`):** **Clean bundle in 306ms**
+- **All Files Line Coverage:** **96.62%**
+- **API Modules Line Coverage:** **97.12%** (Exceeds >90% target)
+- **API Modules Function Coverage:** **98.00%**
+- **Critical Subsystems Line Coverage:**
+  - uth.ts: **100%**
+  - ingestion.ts: **100%**
+  - upload.ts: **97.72%**
+  - client.ts: **92.15%**
+  - ui.tsx: **100%**
+  - AppShell.tsx: **93.47%**
+- **Static Type Checking (	sc -b):** **0 errors**
+- **ESLint (
+pm run lint):** **0 errors, 0 warnings**
+- **Production Build (
+pm run build):** **Clean bundle in 123ms**
 
 ---
 

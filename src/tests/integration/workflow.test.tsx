@@ -109,4 +109,62 @@ describe('Frontend Workflow Integration Tests (Controlled Fixtures)', () => {
     expect(readBack.record_count).toBe(1);
     expect(readBack.records[0]).toEqual({ item_id: 'ITM-001', qty: 50 });
   });
+
+  it('executes dataset discovery to package details workflow', async () => {
+    const discoveryApi = await import('../../api/discovery');
+    const packagesApi = await import('../../api/packages');
+
+    vi.spyOn(discoveryApi, 'getDiscoveredPackages').mockResolvedValue([
+      {
+        package_id: 'pkg-discovered-01',
+        dataset_id: 'dataset-science-01',
+        dataset_version: '1.0.0',
+        schema_version: '1.0.0',
+        board: 'CBSE',
+        medium: 'English',
+        language: 'en',
+        owner: 'qa-team',
+        status: 'VALIDATED',
+      },
+    ]);
+
+    const discoveredList = await discoveryApi.getDiscoveredPackages();
+    expect(discoveredList).toHaveLength(1);
+    const selectedPkg = discoveredList[0];
+    expect(selectedPkg.package_id).toBe('pkg-discovered-01');
+
+    vi.spyOn(packagesApi, 'getPackage').mockResolvedValue({
+      package_id: 'pkg-discovered-01',
+      dataset_id: 'dataset-science-01',
+      dataset_version: '1.0.0',
+      schema_version: '1.0.0',
+      board: 'CBSE',
+      medium: 'English',
+      language: 'en',
+      owner: 'qa-team',
+      status: 'VALIDATED',
+      created_at: '2026-11-01T10:00:00Z',
+      updated_at: '2026-11-02T10:00:00Z',
+    });
+
+    vi.spyOn(packagesApi, 'getPackageHistory').mockResolvedValue({
+      package_id: 'pkg-discovered-01',
+      transitions: [
+        {
+          from_status: 'REGISTERED',
+          to_status: 'VALIDATED',
+          timestamp: '2026-11-01T10:05:00Z',
+          actor: 'validator-engine',
+        },
+      ],
+    });
+
+    const pkgDetails = await packagesApi.getPackage(selectedPkg.package_id);
+    expect(pkgDetails.package_id).toBe('pkg-discovered-01');
+    expect(pkgDetails.status).toBe('VALIDATED');
+
+    const history = await packagesApi.getPackageHistory(selectedPkg.package_id);
+    expect(history.transitions).toHaveLength(1);
+    expect(history.transitions[0].to_status).toBe('VALIDATED');
+  });
 });

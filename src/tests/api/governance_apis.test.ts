@@ -170,4 +170,25 @@ describe('Governance & Operations API Clients Unit Tests', () => {
     await getReadiness();
     expect(mockReq).toHaveBeenCalledWith('/ready');
   });
+
+  it('tests Knowledge Object registration endpoint', async () => {
+    const { registerKnowledgeObject } = await import('../../api/knowledgeObject');
+    const mockReq = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      package_id: 'pkg-ko-1',
+      knowledge_object_id: 'ko-123',
+    });
+
+    await registerKnowledgeObject('pkg-ko-1', {
+      knowledge_object_type: 'dataset_package',
+      canonical_name: 'alpha_package',
+      provenance_trail: [],
+    });
+
+    expect(mockReq).toHaveBeenCalledWith(
+      '/packages/pkg-ko-1/knowledge-object',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
+  });
 });

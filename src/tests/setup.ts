@@ -1,5 +1,12 @@
 import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
 import { webcrypto } from 'node:crypto';
+
+// Ensure automatic cleanup between tests
+afterEach(() => {
+  cleanup();
+});
 
 // Ensure crypto and subtle are available in jsdom test environment
 if (!globalThis.crypto) {
