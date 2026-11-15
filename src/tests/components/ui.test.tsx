@@ -109,9 +109,18 @@ describe('UI Primitives and Common Components', () => {
     expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
-  it('renders DataTable empty state when rows is empty', () => {
+  it('renders DataTable empty state when rows is empty or when headers prop is used', () => {
     render(<DataTable columns={['Col A', 'Col B']} rows={[]} empty="No records located" />);
     expect(screen.getByText('No records located')).toBeInTheDocument();
+
+    // With headers prop instead of columns
+    const { rerender } = render(<DataTable headers={['Hdr 1', 'Hdr 2']} rows={[['Val 1', 'Val 2']]} />);
+    expect(screen.getByText('Hdr 1')).toBeInTheDocument();
+    expect(screen.getByText('Val 1')).toBeInTheDocument();
+
+    // With no columns or headers specified and empty rows
+    rerender(<DataTable rows={[]} empty="Completely empty" />);
+    expect(screen.getByText('Completely empty')).toBeInTheDocument();
   });
 
   it('renders DataTable with array rows', () => {

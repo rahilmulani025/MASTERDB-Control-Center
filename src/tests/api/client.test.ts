@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ApiClient } from '../../api/client';
+import { config } from '../../lib/config';
 import type { APIError } from '../../types/masterdb';
 
 describe('ApiClient Unit Tests', () => {
@@ -282,5 +283,96 @@ describe('ApiClient Unit Tests', () => {
         }),
       })
     );
+  });
+
+  it('joins URL properly when config.apiUrl is set and handles path prefixing', async () => {
+    const originalApiUrl = config.apiUrl;
+    try {
+      config.apiUrl = 'https://api.masterdb.io/';
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ ok: true }),
+      });
+
+      // with leading slash
+      await client.request('/upload');
+      expect(globalThis.fetch).toHaveBeenLastCalledWith('https://api.masterdb.io/upload', expect.anything());
+
+      // with no leading slash
+      await client.request('datasets');
+      expect(globalThis.fetch).toHaveBeenLastCalledWith('https://api.masterdb.io/datasets', expect.anything());
+
+      // with empty path
+      await client.request('');
+      expect(globalThis.fetch).toHaveBeenLastCalledWith('https://api.masterdb.io/', expect.anything());
+
+      // with config.apiUrl unset and path without leading slash
+      config.apiUrl = '';
+      await client.request('relative-endpoint');
+      expect(globalThis.fetch).toHaveBeenLastCalledWith('/relative-endpoint', expect.anything());
+    } finally {
+      config.apiUrl = originalApiUrl;
+    }
+  });
+
+  it('handles error payloads with type only, or long non-JSON body > 200 chars', async () => {
+    // Error object with type but no message
+    globalThis.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: async () => JSON.stringify({ error: { type: 'VALIDATION_FAILED' } }),
+    });
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/test');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.type).toBe('VALIDATION_FAILED');
+    expect(caught?.message).toBe('MASTERDB request failed (400).');
+
+    // Long non-JSON response > 200 chars
+    const longHtml = '<html><body>' + 'x'.repeat(250) + '</body></html>';
+    globalThis.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      headers: new Headers({ 'content-type': 'text/html' }),
+      text: async () => longHtml,
+    });
+
+    try {
+      await client.request('/error');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toBe('MASTERDB request failed (500).');
+  });
+
+  it('handles validation details with empty loc or non-string msg', async () => {
+    const errorBody = {
+      detail: [
+        { loc: [], msg: 'Generic schema violation' },
+        { loc: ['field'], code: 'invalid' },
+      ],
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: async () => JSON.stringify(errorBody),
+    });
+
+    let caught: APIError | null = null;
+    try {
+      await client.request('/test-loc');
+    } catch (e) {
+      caught = e as APIError;
+    }
+    expect(caught?.message).toContain('Generic schema violation');
+    expect(caught?.message).toContain('{"loc":["field"],"code":"invalid"}');
   });
 });

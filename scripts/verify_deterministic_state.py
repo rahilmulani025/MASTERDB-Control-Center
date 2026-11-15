@@ -92,6 +92,26 @@ def main():
         first_digest = digests[0]
         drift_detected = any(d != first_digest for d in digests)
 
+        # Save machine-readable verification artifact
+        reports_dir = REPO_ROOT / "reports"
+        reports_dir.mkdir(exist_ok=True)
+        artifact_path = reports_dir / "deterministic_verification.json"
+        with open(artifact_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "task_id": "T-GOV-F01",
+                    "total_runs": len(digests),
+                    "identical": not drift_detected,
+                    "canonical_sha256": first_digest,
+                    "all_runs": [
+                        {"run": idx + 1, "sha256": h, "status": "MATCH"}
+                        for idx, h in enumerate(digests)
+                    ],
+                },
+                f,
+                indent=2,
+            )
+
         print("-" * 72)
         if drift_detected:
             print("FAILED: Cryptographic drift detected between runs!")
@@ -99,6 +119,7 @@ def main():
         else:
             print("SUCCESS: 50/50 consecutive runs identical.")
             print(f"Deterministic Canonical SHA-256 Digest: {first_digest}")
+            print(f"Artifact written: {artifact_path.relative_to(REPO_ROOT)}")
             print("=" * 72)
 
 

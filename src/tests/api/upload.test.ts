@@ -253,4 +253,57 @@ describe('Upload API Service Unit Tests', () => {
     const isSupported = ['JSON', 'CSV', 'XLSX'].includes(unsupportedFile.name.split('.').pop()?.toUpperCase() || '');
     expect(isSupported).toBe(false);
   });
+
+  it('throws an error if Web Crypto API is unavailable', async () => {
+    const originalCrypto = window.crypto;
+    try {
+      // Temporarily remove crypto.subtle
+      Object.defineProperty(window, 'crypto', {
+        value: {},
+        configurable: true,
+        writable: true,
+      });
+
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+      await expect(computeFileSha256(file)).rejects.toThrow('Web Crypto API is not supported');
+    } finally {
+      Object.defineProperty(window, 'crypto', {
+        value: originalCrypto,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+
+  it('handles initiateUpload with empty/missing optional metadata fields gracefully', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      upload_id: 'upl-minimal-001',
+      status: 'UPLOAD_INITIATED',
+    });
+
+    await initiateUpload({
+      filename: 'minimal.json',
+      content_type: 'application/json',
+      file_size: 100,
+      checksum_sha256: '   ',
+      classification: '',
+      source_reference: '',
+      provenance_metadata: {},
+      schema_version: '  ',
+      product_source: '',
+      intended_use: '',
+      metadata: {},
+    });
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      '/upload',
+      expect.objectContaining({
+        body: JSON.stringify({
+          filename: 'minimal.json',
+          content_type: 'application/json',
+          file_size: 100,
+        }),
+      })
+    );
+  });
 });

@@ -74,9 +74,12 @@ describe('Navigation & AppShell Component Tests', () => {
       { route: '/governance/retrieval', expected: ['Governance', 'Retrieval Readiness'] },
       { route: '/lineage', expected: ['Lineage & Provenance'] },
       { route: '/audit', expected: ['Audit & Replay'] },
+      { route: '/admin', expected: ['System & Administration'] },
       { route: '/admin/shared-data', expected: ['Shared Data Registry'] },
       { route: '/observability', expected: ['Observability Telemetry'] },
+      { route: '/datasets', expected: ['Dataset Explorer'] },
       { route: '/datasets/pkg-alpha', expected: ['Dataset Explorer', 'pkg-alpha'] },
+      { route: '/custom-diagnostics', expected: ['custom diagnostics'] },
     ];
 
     for (const { route, expected } of testRoutes) {
@@ -92,5 +95,20 @@ describe('Navigation & AppShell Component Tests', () => {
       }
       unmount();
     }
+  });
+
+  it('handles health check rejection gracefully and shows Offline status', async () => {
+    vi.spyOn(healthApi, 'getHealth').mockRejectedValue(new Error('Network error'));
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <AppShell />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline')).toBeInTheDocument();
+      expect(screen.getByText('Backend Offline')).toBeInTheDocument();
+    });
   });
 });
