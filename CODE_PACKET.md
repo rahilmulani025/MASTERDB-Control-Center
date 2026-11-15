@@ -63,13 +63,13 @@ MASTERDB-Control-Center/
 │   └── tests/                                 # Frontend Test Suites (Vitest)
 │       ├── setup.ts                           # JSDOM environment setup and crypto polyfill
 │       ├── api/
-│       │   ├── client.test.ts                 # Base API client error handling & headers (14 tests)
+│       │   ├── client.test.ts                 # Base API client error handling & headers (17 tests)
 │       │   ├── auth.test.ts                   # Token acquisition and cache expiry (6 tests)
-│       │   ├── upload.test.ts                 # Upload lifecycle & validation (12 tests)
+│       │   ├── upload.test.ts                 # Upload lifecycle & validation (14 tests)
 │       │   ├── ingestion.test.ts              # Ingestion dispatch & database read-back (12 tests)
 │       │   └── governance_apis.test.ts        # Governance & operations client tests (10 tests)
 │       ├── components/
-│       │   ├── navigation.test.tsx            # Sidebar, brand, and breadcrumbs tests (3 tests)
+│       │   ├── navigation.test.tsx            # Sidebar, brand, and breadcrumbs tests (4 tests)
 │       │   ├── governance.test.tsx            # Standalone governance components tests (7 tests)
 │       │   ├── explorer.test.tsx              # Dataset Explorer, search, empty/loading (4 tests)
 │       │   └── ui.test.tsx                    # UI primitives: PageHeader, DataTable, StatusBadge (8 tests)
@@ -90,14 +90,18 @@ MASTERDB-Control-Center/
 │       │   ├── sql_artifact_store.py          # Central SQL database store (SQLite/Postgres)
 │       │   ├── backup_service.py              # Application-level snapshot export and restore
 │       │   └── tantra_interface_service.py    # TANTRA runtime integration adapter
-│       ├── tests/                             # 38 pytest test modules (274 tests)
+│       ├── tests/                             # 38 pytest test modules (279 tests)
 │       │   ├── test_deterministic_execution.py# 50-run repeatability verification test
 │       │   ├── test_malformed_inputs.py       # Fuzz and malformed payload defense suite
-│       │   └── ...                            # 36 unit and integration test modules
+│       │   ├── test_coverage_hardening.py     # Backend domain service coverage hardening
+│       │   └── ...                            # 35 unit and integration test modules
 │       └── datasets/                          # Reference evaluation datasets & contracts
 │
 ├── scripts/                                   # Standalone Verification Scripts
 │   └── verify_deterministic_state.py          # Standalone 50-run verification harness
+│
+├── reports/                                   # Machine-Readable Verification Artifacts
+│   └── deterministic_verification.json        # 50/50 consecutive identical SHA-256 runs record
 │
 ├── docs/                                      # Comprehensive Technical Documentation
 │   ├── MASTERDB_CONTROL_CENTER_SPEC.md        # Architecture specification
@@ -203,6 +207,8 @@ During the Phase 2 Parikshak remediation, the following files were added or modi
 | `backend/.../tests/test_deterministic_execution.py`| Added | Automated 50-run deterministic repeatability test |
 | `backend/.../tests/test_malformed_inputs.py`| Added | Automated malformed inputs defense test suite |
 | `scripts/verify_deterministic_state.py`| Added | Standalone 50-run verification harness script |
+| `backend/.../tests/test_coverage_hardening.py`| Added | Backend domain service branch coverage hardening suite |
+| `reports/deterministic_verification.json`| Added | Machine-readable verification record of all 50 identical hashes |
 | `docs/ROUTES.md` | Modified | Documented all 7 standalone governance routes and APIs |
 | `docs/MASTERDB_CONTROL_CENTER_PROOF.md` | Modified | Documented test metrics, deterministic hash, and architecture notes |
 | `REVIEW_PACKET.md` | Added | Root Parikshak evaluation review packet |
@@ -216,40 +222,46 @@ During the Phase 2 Parikshak remediation, the following files were added or modi
 #### 1. Backend Testing Suite
 ```bash
 pytest -q
-# Expected: 272 passed in ~8s
+# Expected: 279 passed in ~7s
 ```
 
-#### 2. Standalone 50-Run Deterministic Verification
+#### 2. Backend Code Coverage
+```bash
+pytest --cov=backend/bhiv-masterdb-ingestion-certification-service-main --cov-branch --cov-report=term
+# Expected: 279 passed, 95.87% line coverage, 87.77% branch coverage (95% combined)
+```
+
+#### 3. Standalone 50-Run Deterministic Verification
 ```bash
 python scripts/verify_deterministic_state.py
 # Expected: 50/50 runs identical, SHA-256 digest: 9b7bd6b9ecdf98a198251257d7f771d7a25a53ad15dd295b6d867d98691afbca
 ```
 
-#### 3. Frontend Testing Suite
+#### 4. Frontend Testing Suite
 ```bash
-npm test -- --run
-# Expected: 8 passed / 8 files, 46 passed tests in ~3s
+npm test
+# Expected: 10 passed test files, 84 passed tests in ~5s
 ```
 
-#### 4. Frontend Code Coverage
+#### 5. Frontend Code Coverage
 ```bash
-npm run test:coverage -- --run
-# Expected: >86% line coverage, 96% function coverage across src/api
+npm run test:coverage
+# Expected: 100% line coverage, 94.94% branch coverage, 100% statement/function coverage
 ```
 
-#### 5. Static Type Checking
+#### 6. Static Type Checking
 ```bash
 npm run type-check
 # Expected: 0 errors
 ```
 
-#### 6. ESLint Verification
+#### 7. ESLint Verification
 ```bash
 npm run lint
 # Expected: 0 errors, 0 warnings
 ```
 
-#### 7. Production Build
+#### 8. Production Build
 ```bash
 npm run build
 # Expected: Clean production bundle created in dist/

@@ -55,13 +55,13 @@ MASTERDB-Control-Center/
 │   └── tests/                                 # Frontend Test Suites (Vitest)
 │       ├── setup.ts                           # JSDOM environment setup and crypto polyfill
 │       ├── api/
-│       │   ├── client.test.ts                 # Base API client error handling & headers (14 tests)
+│       │   ├── client.test.ts                 # Base API client error handling & headers (17 tests)
 │       │   ├── auth.test.ts                   # Token acquisition and cache expiry (6 tests)
-│       │   ├── upload.test.ts                 # Upload lifecycle & validation (12 tests)
+│       │   ├── upload.test.ts                 # Upload lifecycle & validation (14 tests)
 │       │   ├── ingestion.test.ts              # Ingestion dispatch & database read-back (12 tests)
 │       │   └── governance_apis.test.ts        # Governance & operations client tests (10 tests)
 │       ├── components/
-│       │   ├── navigation.test.tsx            # Sidebar, brand, and breadcrumbs tests (3 tests)
+│       │   ├── navigation.test.tsx            # Sidebar, brand, and breadcrumbs tests (4 tests)
 │       │   ├── governance.test.tsx            # Standalone governance components tests (7 tests)
 │       │   ├── explorer.test.tsx              # Dataset Explorer, search, empty/loading (4 tests)
 │       │   └── ui.test.tsx                    # UI primitives: PageHeader, DataTable, StatusBadge (8 tests)
@@ -82,14 +82,18 @@ MASTERDB-Control-Center/
 │       │   ├── sql_artifact_store.py          # Central SQL database store (SQLite/Postgres)
 │       │   ├── backup_service.py              # Application-level snapshot export and restore
 │       │   └── tantra_interface_service.py    # TANTRA runtime integration adapter
-│       ├── tests/                             # 38 pytest test modules (274 tests)
+│       ├── tests/                             # 38 pytest test modules (279 tests)
 │       │   ├── test_deterministic_execution.py# 50-run repeatability verification test
 │       │   ├── test_malformed_inputs.py       # Fuzz and malformed payload defense suite
-│       │   └── ...                            # 36 unit and integration test modules
+│       │   ├── test_coverage_hardening.py     # Backend domain service coverage hardening
+│       │   └── ...                            # 35 unit and integration test modules
 │       └── datasets/                          # Reference evaluation datasets & contracts
 │
 ├── scripts/                                   # Standalone Verification Scripts
 │   └── verify_deterministic_state.py          # Standalone 50-run verification harness
+│
+├── reports/                                   # Machine-Readable Verification Artifacts
+│   └── deterministic_verification.json        # 50/50 consecutive identical SHA-256 runs record
 │
 ├── docs/                                      # Technical Documentation
 │   ├── MASTERDB_CONTROL_CENTER_SPEC.md        # Architecture specification
