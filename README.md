@@ -49,12 +49,15 @@ MASTERDB FastAPI Backend (Port 8000 / Production URL)
 
 | Technology | Role |
 |---|---|
-| **React 18** | Component-based UI rendering |
-| **TypeScript 5.6** | Strict end-to-end type safety |
-| **React Router 6** | Client-side routing with SPA layouts |
-| **Vite 6** | Fast build tooling and development proxy |
+| **React 19** | Component-based UI rendering |
+| **TypeScript 5/6** | Strict end-to-end type safety |
+| **React Router 7** | Client-side routing with SPA layouts |
+| **Vite 8** | Fast build tooling and development proxy |
+| **Vitest 5 & RTL** | Unit, component, and integration test runner with v8 coverage |
 | **Vanilla CSS** | Hand-crafted design system with CSS custom properties (tokens) |
-| **ESLint 9** | Code quality and standard adherence |
+| **ESLint 10** | Code quality and standard adherence |
+| **Python 3.14 / FastAPI** | Bundled sovereign backend and certification gate service |
+| **pytest 9 & pytest-cov** | Automated Python unit/integration test harness and coverage |
 
 ---
 
@@ -82,16 +85,31 @@ npm run dev
 
 ---
 
-## 5. Build & Code Quality Commands
+## 5. Build, Test & Quality Verification Commands
 
 ```bash
-# Type-check TypeScript code (0 errors required)
+# 1. Run root backend test suite (279 passed tests)
+pytest -q
+
+# 2. Run backend test coverage (>90% line coverage required)
+pytest --cov=backend/bhiv-masterdb-ingestion-certification-service-main --cov-branch --cov-report=term-missing
+
+# 3. Run frontend test suite (84 passed tests across 10 files)
+npm test
+
+# 4. Run frontend test coverage (100% line coverage, 94.94% branch coverage)
+npm run test:coverage
+
+# 5. Execute 50-run deterministic repeatability proof
+python scripts/verify_deterministic_state.py
+
+# 6. Type-check TypeScript code (0 errors required)
 npm run type-check
 
-# Run ESLint linter (0 errors, 0 warnings required)
+# 7. Run ESLint linter (0 errors, 0 warnings required)
 npm run lint
 
-# Build production bundle to dist/
+# 8. Build production bundle to dist/
 npm run build
 ```
 
@@ -119,8 +137,13 @@ The Control Center implements the complete authoritative Controlled Ingestion li
 
 ## 7. Documentation Directory
 
-Complete engineering and architecture documentation is available in the [`docs/`](./docs) folder:
+Complete engineering, governance, and architecture documentation:
 
+- [**`REVIEW_PACKET.md`**](./REVIEW_PACKET.md) — Official Parikshak evaluation review packet with test results, coverage breakdowns, and deterministic execution proofs.
+- [**`CODE_PACKET.md`**](./CODE_PACKET.md) — Architecture, directory tree, module map, diff summary, and build/test commands.
+- [**`CODE_INDEX.md`**](./CODE_INDEX.md) — Comprehensive symbol dictionary and file catalogue.
+- [**`docs/T_GOV_F01_ROUTE_SCHEMA_AUDIT.md`**](./docs/T_GOV_F01_ROUTE_SCHEMA_AUDIT.md) — Complete 86-route audit, OpenAPI reconciliation, and Pydantic schema validation analysis.
+- [**`docs/route-schema-inventory.json`**](./docs/route-schema-inventory.json) — Machine-readable inventory of all 86 registered routes.
 - [**`docs/MASTERDB_CONTROL_CENTER_SPEC.md`**](./docs/MASTERDB_CONTROL_CENTER_SPEC.md) — Comprehensive architectural and functional specification.
 - [**`docs/MASTERDB_DASHBOARD_API_MAP.md`**](./docs/MASTERDB_DASHBOARD_API_MAP.md) — Authoritative backend API contract reference.
 - [**`docs/MASTERDB_INGESTION_UI_FLOW.md`**](./docs/MASTERDB_INGESTION_UI_FLOW.md) — Controlled Ingestion lifecycle and UI flow documentation.

@@ -194,18 +194,21 @@ MASTERDB-Control-Center/
 
 ### 5. Automated Test Suite Registry
 
-#### Frontend Test Suites (8 files, 46 tests)
-- `src/tests/api/client.test.ts` (9 tests) — Base HTTP client, token redaction, timeout handling, error parsing.
-- `src/tests/api/auth.test.ts` (4 tests) — JWT acquisition, caching, token refresh on expiry.
-- `src/tests/api/upload.test.ts` (8 tests) — Upload initiation, binary chunk streaming, SHA-256 calculation.
-- `src/tests/api/ingestion.test.ts` (6 tests) — Ingestion submission, job polling, target database read-back.
-- `src/tests/api/governance_apis.test.ts` (9 tests) — Validation, certification, discovery, lineage, TANTRA, MDU, audit, admin APIs.
-- `src/tests/integration/workflow.test.tsx` (1 test) — Full end-to-end controlled ingestion pipeline simulation.
+#### Frontend Test Suites (10 files, 84 tests)
+- `src/tests/api/client.test.ts` (17 tests) — Base HTTP client, URL joining, token redaction, timeout handling, error parsing.
+- `src/tests/api/auth.test.ts` (6 tests) — JWT acquisition, caching, token refresh on expiry.
+- `src/tests/api/upload.test.ts` (14 tests) — Upload initiation, binary chunk streaming, SHA-256 calculation, Web Crypto fallback.
+- `src/tests/api/ingestion.test.ts` (12 tests) — Ingestion submission, job polling, target database read-back.
+- `src/tests/api/governance_apis.test.ts` (10 tests) — Validation, certification, discovery, lineage, TANTRA, MDU, audit, admin APIs.
+- `src/tests/integration/workflow.test.tsx` (2 tests) — Full end-to-end controlled ingestion pipeline simulation.
 - `src/tests/components/governance.test.tsx` (7 tests) — Rendering and interaction of all 7 governance views.
-- `src/tests/components/navigation.test.tsx` (2 tests) — AppShell brand, sidebar links, dynamic breadcrumbs.
+- `src/tests/components/navigation.test.tsx` (4 tests) — AppShell brand, sidebar links, dynamic breadcrumbs, offline status.
+- `src/tests/components/explorer.test.tsx` (4 tests) — Dataset Explorer, search filtering, empty/loading states.
+- `src/tests/components/ui.test.tsx` (8 tests) — UI primitives: PageHeader, DataTable, StatusBadge, Cards.
 
-#### Backend Test Suites (38 files, 272 tests)
+#### Backend Test Suites (38 files, 279 tests)
 - `tests/test_deterministic_execution.py` — 50-run repeatability verification on certifiable sample dataset.
+- `tests/test_coverage_hardening.py` — Backend domain service coverage hardening across uncovered branches.
 - `tests/test_malformed_inputs.py` — Defense against malformed payloads across all endpoints.
 - `tests/test_validation_service.py` — Validation rules, integrity score calculations, gap flags.
 - `tests/test_certification_service.py` — Certification state machine transitions and audit trails.
@@ -215,4 +218,4 @@ MASTERDB-Control-Center/
 - `tests/test_tantra_interface_service.py` — TANTRA runtime lookups and readiness gates.
 - `tests/test_mdu_contract_adapter.py` — MDU schema contract compatibility.
 - `tests/test_sql_database.py` — SQL storage backend CRUD operations.
-- *(plus 28 additional unit and integration test modules)*
+- *(plus 27 additional unit and integration test modules)*

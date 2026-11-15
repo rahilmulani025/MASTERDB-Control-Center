@@ -193,14 +193,16 @@ During the Phase 2 Parikshak remediation, the following files were added or modi
 | `src/layouts/AppShell.tsx` | Modified | Added Ingestion Jobs and governance subroutes to navigation |
 | `src/components/ui.tsx` | Modified | Enhanced `DataTable` to accept both headers and ReactNode array rows |
 | `src/tests/setup.ts` | Added | Configured JSDOM crypto polyfill and testing-library setup |
-| `src/tests/api/client.test.ts` | Added | Unit tests for base API client (9 tests) |
-| `src/tests/api/auth.test.ts` | Added | Unit tests for authentication client (4 tests) |
-| `src/tests/api/upload.test.ts` | Added | Unit tests for upload client (8 tests) |
-| `src/tests/api/ingestion.test.ts` | Added | Unit tests for ingestion and read-back client (6 tests) |
-| `src/tests/api/governance_apis.test.ts` | Added | Unit tests for governance API clients (9 tests) |
-| `src/tests/integration/workflow.test.tsx`| Added | End-to-end integration test for ingestion workflow (1 test) |
+| `src/tests/api/client.test.ts` | Added | Unit tests for base API client (17 tests) |
+| `src/tests/api/auth.test.ts` | Added | Unit tests for authentication client (6 tests) |
+| `src/tests/api/upload.test.ts` | Added | Unit tests for upload client (14 tests) |
+| `src/tests/api/ingestion.test.ts` | Added | Unit tests for ingestion and read-back client (12 tests) |
+| `src/tests/api/governance_apis.test.ts` | Added | Unit tests for governance API clients (10 tests) |
+| `src/tests/integration/workflow.test.tsx`| Added | End-to-end integration test for ingestion workflow (2 tests) |
 | `src/tests/components/governance.test.tsx`| Added | Component tests for standalone governance views (7 tests) |
-| `src/tests/components/navigation.test.tsx`| Added | Component tests for brand, sidebar, and breadcrumbs (2 tests) |
+| `src/tests/components/navigation.test.tsx`| Added | Component tests for brand, sidebar, and breadcrumbs (4 tests) |
+| `src/tests/components/explorer.test.tsx`  | Added | Component tests for Dataset Explorer and search (4 tests) |
+| `src/tests/components/ui.test.tsx`        | Added | Component tests for UI primitive components (8 tests) |
 | `backend/.../services/validation_service.py`| Modified | Fixed relative config path resolution for root execution |
 | `backend/.../services/certification_service.py`| Modified | Fixed relative config path resolution for root execution |
 | `backend/.../services/backup_service.py`| Modified | Added input validation to prevent 500 error on malformed snapshot |
@@ -209,6 +211,8 @@ During the Phase 2 Parikshak remediation, the following files were added or modi
 | `scripts/verify_deterministic_state.py`| Added | Standalone 50-run verification harness script |
 | `backend/.../tests/test_coverage_hardening.py`| Added | Backend domain service branch coverage hardening suite |
 | `reports/deterministic_verification.json`| Added | Machine-readable verification record of all 50 identical hashes |
+| `docs/T_GOV_F01_ROUTE_SCHEMA_AUDIT.md`   | Added | Complete 86-route audit, OpenAPI reconciliation, and schema report |
+| `docs/route-schema-inventory.json`       | Added | Machine-readable JSON inventory of all registered API routes |
 | `docs/ROUTES.md` | Modified | Documented all 7 standalone governance routes and APIs |
 | `docs/MASTERDB_CONTROL_CENTER_PROOF.md` | Modified | Documented test metrics, deterministic hash, and architecture notes |
 | `REVIEW_PACKET.md` | Added | Root Parikshak evaluation review packet |

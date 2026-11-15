@@ -1,0 +1,2578 @@
+{
+  "task_id": "T-GOV-F01",
+  "total_routes": 86,
+  "apiroutes_count": 82,
+  "documentation_routes_count": 4,
+  "openapi_unique_paths": 73,
+  "routes": [
+    {
+      "id": 1,
+      "path": "/openapi.json",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "openapi",
+      "route_type": "Starlette Route",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "HTML / JSON (Builtin)",
+      "auth_requirement": "Public",
+      "rbac_role": "Public",
+      "error_handling": [
+        "404 Not Found"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py"
+      ],
+      "in_openapi": false
+    },
+    {
+      "id": 2,
+      "path": "/docs",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "swagger_ui_html",
+      "route_type": "Starlette Route",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "HTML / JSON (Builtin)",
+      "auth_requirement": "Public",
+      "rbac_role": "Public",
+      "error_handling": [
+        "404 Not Found"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py"
+      ],
+      "in_openapi": false
+    },
+    {
+      "id": 3,
+      "path": "/docs/oauth2-redirect",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "swagger_ui_redirect",
+      "route_type": "Starlette Route",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "HTML / JSON (Builtin)",
+      "auth_requirement": "Public",
+      "rbac_role": "Public",
+      "error_handling": [
+        "404 Not Found"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py"
+      ],
+      "in_openapi": false
+    },
+    {
+      "id": 4,
+      "path": "/redoc",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "redoc_html",
+      "route_type": "Starlette Route",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "HTML / JSON (Builtin)",
+      "auth_requirement": "Public",
+      "rbac_role": "Public",
+      "error_handling": [
+        "404 Not Found"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py"
+      ],
+      "in_openapi": false
+    },
+    {
+      "id": 5,
+      "path": "/validate",
+      "methods": [
+        "POST"
+      ],
+      "name": "validate_dataset",
+      "route_type": "APIRoute",
+      "request_body_model": "ValidationRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py",
+        "tests/test_malformed_inputs.py",
+        "tests/test_validation_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 6,
+      "path": "/certify",
+      "methods": [
+        "POST"
+      ],
+      "name": "certify_dataset",
+      "route_type": "APIRoute",
+      "request_body_model": "CertificationRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_certification_service.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 7,
+      "path": "/status/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_status",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 8,
+      "path": "/report/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_report",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 9,
+      "path": "/packages/register",
+      "methods": [
+        "POST"
+      ],
+      "name": "register_package",
+      "route_type": "APIRoute",
+      "request_body_model": "PackageRegisterRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_registry_api.py",
+        "tests/test_package_registry_service.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 10,
+      "path": "/packages/promote",
+      "methods": [
+        "POST"
+      ],
+      "name": "promote_package",
+      "route_type": "APIRoute",
+      "request_body_model": "PackagePromoteRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_registry_api.py",
+        "tests/test_package_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 11,
+      "path": "/packages/deprecate",
+      "methods": [
+        "POST"
+      ],
+      "name": "deprecate_package",
+      "route_type": "APIRoute",
+      "request_body_model": "PackageDeprecateRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_registry_api.py",
+        "tests/test_package_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 12,
+      "path": "/packages/{package_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_package",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_registry_api.py",
+        "tests/test_package_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 13,
+      "path": "/packages/{package_id}/history",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_package_history",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_registry_api.py",
+        "tests/test_package_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 14,
+      "path": "/packages/{package_id}/replay",
+      "methods": [
+        "GET"
+      ],
+      "name": "replay_package",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_audit_and_replay.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 15,
+      "path": "/packages/{package_id}/audit",
+      "methods": [
+        "GET"
+      ],
+      "name": "audit_package",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_audit_and_replay.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 16,
+      "path": "/packages/{package_id}/knowledge-object",
+      "methods": [
+        "POST"
+      ],
+      "name": "register_knowledge_object",
+      "route_type": "APIRoute",
+      "request_body_model": "KnowledgeObjectRegisterRequest",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_knowledge_object_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 17,
+      "path": "/packages/{package_id}/lineage",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_package_lineage",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_knowledge_object_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 18,
+      "path": "/packages/{package_id}/retrieval",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_package_retrieval",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_retrieval_readiness_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 19,
+      "path": "/mdu/status",
+      "methods": [
+        "GET"
+      ],
+      "name": "mdu_status",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_mdu_contract_adapter.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 20,
+      "path": "/mdu/schema/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "mdu_schema",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_mdu_contract_adapter.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 21,
+      "path": "/mdu/provenance/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "mdu_provenance",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "list",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_mdu_contract_adapter.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 22,
+      "path": "/mdu/schema-compatibility/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "mdu_schema_compatibility",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_mdu_contract_adapter.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 23,
+      "path": "/tantra/datasets/register",
+      "methods": [
+        "POST"
+      ],
+      "name": "tantra_register_dataset",
+      "route_type": "APIRoute",
+      "request_body_model": "PackageRegisterRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_tantra_interface_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 24,
+      "path": "/tantra/packages/{package_id}/retrieval-readiness",
+      "methods": [
+        "GET"
+      ],
+      "name": "tantra_retrieval_readiness",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_tantra_interface_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 25,
+      "path": "/tantra/certification/{dataset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "tantra_certification_status",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_tantra_interface_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 26,
+      "path": "/tantra/packages/{package_id}/runtime",
+      "methods": [
+        "GET"
+      ],
+      "name": "tantra_runtime_package_lookup",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "package_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_tantra_interface_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 27,
+      "path": "/discovery/packages",
+      "methods": [
+        "GET"
+      ],
+      "name": "discover_packages",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "package_id",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='package_id' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "dataset_id",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='dataset_id' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "board",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='board' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "medium",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='medium' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "version",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='version' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "Union",
+          "default": "annotation=Union[PackageStatus, NoneType] required=False default=None alias='status' json_schema_extra={}",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_runtime_discovery_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 28,
+      "path": "/shared/registry",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_shared_data_registry",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_data_registry.py",
+        "tests/test_shared_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 29,
+      "path": "/shared/registry/{dataset_name}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_shared_dataset_definition",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "dataset_name",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_data_registry.py",
+        "tests/test_shared_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 30,
+      "path": "/shared/contracts",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_shared_service_contracts",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_platform_services.py",
+        "tests/test_shared_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 31,
+      "path": "/shared/contracts/{service_name}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_shared_service_contract",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_platform_services.py",
+        "tests/test_shared_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 32,
+      "path": "/shared/version-compatibility",
+      "methods": [
+        "GET"
+      ],
+      "name": "shared_version_compatibility",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_version_compatibility.py",
+        "tests/test_shared_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 33,
+      "path": "/shared/{service_name}/register",
+      "methods": [
+        "POST"
+      ],
+      "name": "register_shared_record",
+      "route_type": "APIRoute",
+      "request_body_model": "SharedRecordRegisterRequest",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 34,
+      "path": "/shared/{service_name}/{record_id}",
+      "methods": [
+        "PUT"
+      ],
+      "name": "update_shared_record",
+      "route_type": "APIRoute",
+      "request_body_model": "SharedRecordUpdateRequest",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 35,
+      "path": "/shared/{service_name}/{record_id}/deprecate",
+      "methods": [
+        "POST"
+      ],
+      "name": "deprecate_shared_record",
+      "route_type": "APIRoute",
+      "request_body_model": "SharedRecordDeprecateRequest",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 36,
+      "path": "/shared/{service_name}",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_shared_records",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 37,
+      "path": "/shared/{service_name}/{record_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_shared_record",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 38,
+      "path": "/shared/{service_name}/{record_id}/history",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_shared_record_history",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 39,
+      "path": "/shared/{service_name}/{record_id}/replay",
+      "methods": [
+        "GET"
+      ],
+      "name": "replay_shared_record",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 40,
+      "path": "/shared/{service_name}/{record_id}/resolve",
+      "methods": [
+        "GET"
+      ],
+      "name": "resolve_shared_record_dependencies",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "service_name",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "record_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_shared_api.py",
+        "tests/test_shared_record_store.py",
+        "tests/test_shared_dependency_resolver.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 41,
+      "path": "/bcaes/registries/{registry_type}/objects",
+      "methods": [
+        "POST"
+      ],
+      "name": "register_bcaes_object",
+      "route_type": "APIRoute",
+      "request_body_model": "RegisterObjectRequest",
+      "path_parameters": [
+        {
+          "name": "registry_type",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 42,
+      "path": "/bcaes/registries",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_bcaes_registries",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 43,
+      "path": "/bcaes/registries/{registry_type}/objects",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_bcaes_registry_objects",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "registry_type",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 44,
+      "path": "/bcaes/registries/{registry_type}/objects/{object_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_bcaes_object",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "registry_type",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 45,
+      "path": "/bcaes/registries/{registry_type}/objects/{object_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_bcaes_object",
+      "route_type": "APIRoute",
+      "request_body_model": "UpdateObjectRequest",
+      "path_parameters": [
+        {
+          "name": "registry_type",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 46,
+      "path": "/bcaes/registries/{registry_type}/objects/{object_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_bcaes_object",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "registry_type",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py",
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 47,
+      "path": "/bcaes/search",
+      "methods": [
+        "GET"
+      ],
+      "name": "search_bcaes_registry",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "q",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='q' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "registry_type",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='registry_type' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='owner' json_schema_extra={}",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "Union",
+          "default": "annotation=Union[str, NoneType] required=False default=None alias='status' json_schema_extra={}",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 48,
+      "path": "/bcaes/relationships/{object_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_bcaes_relationships",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 49,
+      "path": "/bcaes/dependencies/{object_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_bcaes_dependencies",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 50,
+      "path": "/bcaes/capability-reuse-check",
+      "methods": [
+        "GET"
+      ],
+      "name": "bcaes_capability_reuse_check",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 51,
+      "path": "/bcaes/validate/classification",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_classification",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 52,
+      "path": "/bcaes/validate/duplicates",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_duplicates",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 53,
+      "path": "/bcaes/validate/ownership",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_ownership",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 54,
+      "path": "/bcaes/validate/authority-boundaries",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_authority_boundaries",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 55,
+      "path": "/bcaes/validate/version-compatibility",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_version_compatibility",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 56,
+      "path": "/bcaes/validate/dependency-integrity",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_dependency_integrity",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 57,
+      "path": "/bcaes/validate/architecture",
+      "methods": [
+        "GET"
+      ],
+      "name": "validate_bcaes_architecture",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 58,
+      "path": "/bcaes/convergence/{object_id}",
+      "methods": [
+        "POST"
+      ],
+      "name": "upsert_bcaes_convergence",
+      "route_type": "APIRoute",
+      "request_body_model": "ConvergenceUpdateRequest",
+      "path_parameters": [
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_convergence_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 59,
+      "path": "/bcaes/convergence/{object_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_bcaes_convergence",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "object_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_convergence_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 60,
+      "path": "/bcaes/convergence",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_bcaes_convergence",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_convergence_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 61,
+      "path": "/bcaes/snapshot",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_bcaes_snapshot",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_bcaes_registry_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 62,
+      "path": "/canonical-repository/documents",
+      "methods": [
+        "POST"
+      ],
+      "name": "register_canonical_document",
+      "route_type": "APIRoute",
+      "request_body_model": "RegisterDocumentRequest",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 63,
+      "path": "/canonical-repository/documents",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_canonical_documents",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 64,
+      "path": "/canonical-repository/documents/{document_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_canonical_document",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 65,
+      "path": "/canonical-repository/by-category/{category}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_canonical_document_by_category",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "category",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 66,
+      "path": "/canonical-repository/documents/{document_id}/versions",
+      "methods": [
+        "POST"
+      ],
+      "name": "publish_canonical_document_version",
+      "route_type": "APIRoute",
+      "request_body_model": "PublishVersionRequest",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 67,
+      "path": "/canonical-repository/documents/{document_id}/versions",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_canonical_document_versions",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 68,
+      "path": "/canonical-repository/documents/{document_id}/versions/{version_number}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_canonical_document_version",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        },
+        {
+          "name": "version_number",
+          "type": "int",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 69,
+      "path": "/canonical-repository/documents/{document_id}/latest",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_canonical_document_latest",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 70,
+      "path": "/canonical-repository/documents/{document_id}/verify",
+      "methods": [
+        "GET"
+      ],
+      "name": "verify_canonical_document_chain",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "document_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_canonical_repository_api.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 71,
+      "path": "/auth/token",
+      "methods": [
+        "POST"
+      ],
+      "name": "issue_token",
+      "route_type": "APIRoute",
+      "request_body_model": "TokenRequest",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "Dict[str, Any]",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_auth_service.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 72,
+      "path": "/health",
+      "methods": [
+        "GET"
+      ],
+      "name": "health",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py",
+        "tests/test_runtime_identity_and_metrics.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 73,
+      "path": "/ready",
+      "methods": [
+        "GET"
+      ],
+      "name": "ready",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_api.py",
+        "tests/test_runtime_identity_and_metrics.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 74,
+      "path": "/admin/backup",
+      "methods": [
+        "GET"
+      ],
+      "name": "create_backup",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Bearer JWT",
+      "rbac_role": "bhiv-admin",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "401 Unauthorized",
+        "403 Forbidden",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_admin_backup_endpoints.py",
+        "tests/test_backup_service.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 75,
+      "path": "/admin/restore",
+      "methods": [
+        "POST"
+      ],
+      "name": "restore_backup",
+      "route_type": "APIRoute",
+      "request_body_model": "dict",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Bearer JWT",
+      "rbac_role": "bhiv-admin",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "401 Unauthorized",
+        "403 Forbidden",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_admin_backup_endpoints.py",
+        "tests/test_backup_service.py",
+        "tests/test_malformed_inputs.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 76,
+      "path": "/admin/configuration",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_configuration_report",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Bearer JWT",
+      "rbac_role": "bhiv-admin",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "401 Unauthorized",
+        "403 Forbidden",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_admin_configuration_endpoint.py",
+        "tests/test_startup_config.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 77,
+      "path": "/runtime/identity",
+      "methods": [
+        "GET"
+      ],
+      "name": "runtime_identity",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_runtime_identity_and_metrics.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 78,
+      "path": "/metrics",
+      "methods": [
+        "GET"
+      ],
+      "name": "metrics",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "Any",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_runtime_identity_and_metrics.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 79,
+      "path": "/observability/push-to-insightbridge",
+      "methods": [
+        "POST"
+      ],
+      "name": "push_to_insightbridge",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_insightbridge_push_endpoint.py",
+        "tests/test_insightbridge_client.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 80,
+      "path": "/parikshak/review-references",
+      "methods": [
+        "POST"
+      ],
+      "name": "upsert_review_reference",
+      "route_type": "APIRoute",
+      "request_body_model": "UpsertReviewReferenceRequest",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 81,
+      "path": "/parikshak/review-references",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_review_references",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 82,
+      "path": "/parikshak/review-references/{external_review_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_review_reference",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "external_review_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 83,
+      "path": "/niyantran/task-state",
+      "methods": [
+        "POST"
+      ],
+      "name": "upsert_operational_task_state",
+      "route_type": "APIRoute",
+      "request_body_model": "UpsertOperationalTaskStateRequest",
+      "path_parameters": [],
+      "query_parameters": [
+        {
+          "name": "identity",
+          "type": "AuthIdentity",
+          "default": "Depends(get_identity)",
+          "required": false
+        }
+      ],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 84,
+      "path": "/niyantran/task-state",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_operational_task_state",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 85,
+      "path": "/niyantran/task-state/{external_task_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_operational_task_state",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [
+        {
+          "name": "external_task_id",
+          "type": "str",
+          "required": true
+        }
+      ],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "404 Not Found",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_operational_sync.py"
+      ],
+      "in_openapi": true
+    },
+    {
+      "id": 86,
+      "path": "/replay-registry/manifest",
+      "methods": [
+        "GET"
+      ],
+      "name": "replay_registry_manifest",
+      "route_type": "APIRoute",
+      "request_body_model": "NOT APPLICABLE \u2014 NO REQUEST BODY",
+      "path_parameters": [],
+      "query_parameters": [],
+      "response_model": "dict",
+      "auth_requirement": "Public (Unauthenticated)",
+      "rbac_role": "Public",
+      "error_handling": [
+        "422 Unprocessable Entity",
+        "400 Bad Request"
+      ],
+      "relevant_tests": [
+        "tests/test_replay_registry_manifest.py"
+      ],
+      "in_openapi": true
+    }
+  ]
+}
